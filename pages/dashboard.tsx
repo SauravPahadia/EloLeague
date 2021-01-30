@@ -1,70 +1,98 @@
-import React, { useEffect, useState } from 'react';
-import {GetServerSideProps} from "next";
-import {getSession} from "next-auth/client";
-import SignInButton from "../components/SignInButton";
-import useSWR from "swr";
-import Modal from 'react-modal';
-
+import React, {useEffect, useState} from "react";
+import ElButton from "../components/ElButton";
+import ElModal from "../components/ElModal";
+import ElH2 from "../components/ElH2";
+import ElH3 from "../components/ElH3";
+import ElInput from "../components/ElInput";
+import axios from "axios";
+import {useRouter} from "next/router";
 
 export default function Dashboard() {
-    const user = {uid: "asdf"} // replace with session information
-    const { data, error} = useSWR(`/api/leagues?uid=${user.uid}`, (url) => fetch(url).then(resp => resp.json()));
-    console.log(data);
-    const [modalIsOpen,setIsOpen] = useState(false);
-    
-    const customStyles = {
-        content: {
-            top                   : '50%',
-            left                  : '50%',
-            right                 : 'auto',
-            bottom                : 'auto',
-            marginRight           : '-50%',
-            transform             : 'translate(-50%, -50%)',
-            width                 : '50%'
-        }
+    const router = useRouter();
+    const [newLeagueOpen, setNewLeagueOpen] = useState<boolean>(false);
+    const [name, setName] = useState<string>("");
+    const [urlName, setUrlName] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
+    const [newLeagueLoading, setNewLeagueLoading] = useState<boolean>(false);
+    const [urlNameError, setUrlNameError] = useState<boolean>(false);
+    const [urlNameNotUnique, setUrlNameNotUnique] = useState<boolean>(false);
+
+    function onCreateLeague() {
+        setNewLeagueLoading(true);
+
+        axios.post("/api/league/new", {
+            name: name,
+            urlName: urlName,
+            description: description || "",
+        }).then(res => {
+            if (res.data.notUnique) {
+                setNewLeagueLoading(false);
+                setUrlNameNotUnique(true);
+            }
+            else router.push(`/${urlName}`);
+        }).catch(e => {
+           console.log(e);
+           setNewLeagueLoading(false);
+        });
     }
 
+    function onCancelCreateLeague() {
+        setName("");
+        setUrlName("");
+        setDescription("");
+        setNewLeagueOpen(false);
+    }
+
+    useEffect(() => {
+        if (urlName !== encodeURIComponent(urlName) || urlName.includes("/") || ["dashboard", "signin", "about"].includes(urlName)) {
+            setUrlNameError(true);
+        } else {
+            setUrlNameError(false);
+        }
+        setUrlNameNotUnique(false);
+    }, [urlName]);
+
     return (
-        <div  className="flex justify-center content-center">
-            <button onClick={() => setIsOpen(true)}>Open Modal</button>
-            <Modal
-            isOpen={modalIsOpen}
-            onRequestClose={() => setIsOpen(false)}
-            style={customStyles}
-            contentLabel="Example Modal"
-            >
-            <div className="flex justify-between">
-                <h2 className="font-bold">Create New League</h2>
-                <button onClick={() => setIsOpen(false)}>close</button>
-            </div>
-            <form onSubmit={() => {}}>
-                <input type="text" placeholder="Enter League Name Here" />
-                <br />
-                <input type="number" placeholder="Enter Number of Players Here" />
-                <br />
-                <button>Create New League</button>
-            </form>
-            </Modal>
-            <table> 
-                <tr>
-                    <th>League Name</th>
-                    <th>Code</th>
-                    <th>Number of Players</th>
-                    <th>Last Game Played</th>
-                </tr>
-                {data && data.leagues.map(league => {
-                    return (
-                        <tr>
-                            <td>{league.name}</td>
-                            <td>{league.code}</td>
-                            <td>{league.numPlayers}</td>
-                            <td>{league.lastGamePlayed}</td>
-                        </tr>
-                    );
-                })}
-            </table>
+        <div className="max-w-4xl mx-auto px-4">
+            <ElButton onClick={() => setNewLeagueOpen(true)}>
+                New league
+            </ElButton>
+            <ElModal isOpen={newLeagueOpen} setIsOpen={setNewLeagueOpen}>
+                <ElH2>New league</ElH2>
+                <p className="my-2">Leagues left in your free plan: 1/1</p>
+                <hr className="my-6"/>
+                <ElH3>League name</ElH3>
+                <ElInput value={name} setValue={setName} placeholder="Example House Ping Pong League"/>
+                <hr className="my-6"/>
+                <ElH3>League URL name</ElH3>
+                <p className="my-2">Players will be able to view rankings and log games at this link.</p>
+                <div className="flex items-center">
+                    <p className="text-lg mr-1">eloleague.com/</p>
+                    <ElInput value={urlName} setValue={setUrlName} placeholder="example-ping-pong"/>
+                </div>
+                {urlNameError && (
+                    <p className="my-2 text-red-500">Invalid URL name</p>
+                )}
+                {urlNameNotUnique && (
+                    <p className="my-2 text-red-500">URL name already taken</p>
+                )}
+                <hr className="my-6"/>
+                <ElH3>League description (optional)</ElH3>
+                <ElInput
+                    value={description}
+                    setValue={setDescription}
+                    placeholder="Informal ping pong rankings for Example House"
+                />
+                <hr className="my-6"/>
+                <ElButton onClick={onCreateLeague} isLoading={newLeagueLoading}>
+                    Create
+                </ElButton>
+                <ElButton text={true} onClick={onCancelCreateLeague}>
+                    Cancel
+                </ElButton>
+            </ElModal>
         </div>
-    );
+    )
 }
 
 

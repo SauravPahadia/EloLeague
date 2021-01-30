@@ -11,3 +11,13 @@ export interface UserObj {
     image?: string,
     leagues?: number[],
 }
+
+export interface LeagueObj {
+    id: number,
+    user_id: number,
+    name: string,
+    url_name: string,
+    code: string,
+    description?: string,
+    players?: string[],
+}
