@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    font-family: "Arimo", sans-serif;
+}
+
+.el-font-display {
+    font-family: "Oswald", sans-serif;
+}
