@@ -6,8 +6,15 @@ import ElH3 from "../components/ElH3";
 import ElInput from "../components/ElInput";
 import axios from "axios";
 import {useRouter} from "next/router";
+import useSWR, {responseInterface} from "swr";
+import {fetcher} from "../utils/fetcher";
+import {GetServerSideProps} from "next";
+import {getSession} from "next-auth/client";
+import {LeagueObj, SessionObj} from "../utils/types";
+import ElH1 from "../components/ElH1";
+import Link from "next/link";
 
-export default function Dashboard() {
+export default function Dashboard(props: {session: SessionObj}) {
     const router = useRouter();
     const [newLeagueOpen, setNewLeagueOpen] = useState<boolean>(false);
     const [name, setName] = useState<string>("");
@@ -16,6 +23,8 @@ export default function Dashboard() {
     const [newLeagueLoading, setNewLeagueLoading] = useState<boolean>(false);
     const [urlNameError, setUrlNameError] = useState<boolean>(false);
     const [urlNameNotUnique, setUrlNameNotUnique] = useState<boolean>(false);
+
+    const {data: leagues, error: _}: responseInterface<LeagueObj[], any> = useSWR(`/api/league/list?userId=${props.session.userId}`, fetcher);
 
     function onCreateLeague() {
         setNewLeagueLoading(true);
@@ -54,9 +63,25 @@ export default function Dashboard() {
 
     return (
         <div className="max-w-4xl mx-auto px-4">
-            <ElButton onClick={() => setNewLeagueOpen(true)}>
-                New league
-            </ElButton>
+            <div className="flex items-end">
+                <ElH1>Your leagues</ElH1>
+                <div className="ml-auto mb-6">
+                    <ElButton onClick={() => setNewLeagueOpen(true)}>
+                        New league
+                    </ElButton>
+                </div>
+            </div>
+            <hr className="my-4"/>
+            {leagues && leagues.map(league => (
+                <Link href={`/${league.url_name}`}>
+                    <a className="w-full p-4 shadow-md my-4 block">
+                        <ElH3>{league.name}</ElH3>
+                        {league.description && <p>{league.description}</p>}
+                        <p>{league.players ? league.players.length : 0} players</p>
+                        <p>Access code: <span className="el-font-display">{league.code}</span></p>
+                    </a>
+                </Link>
+            ))}
             <ElModal isOpen={newLeagueOpen} setIsOpen={setNewLeagueOpen}>
                 <ElH2>New league</ElH2>
                 <p className="my-2">Leagues left in your free plan: 1/1</p>
@@ -95,4 +120,14 @@ export default function Dashboard() {
     )
 }
 
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const session = await getSession(context);
 
+    if (!session) {
+        context.res.setHeader("location", "/signin");
+        context.res.statusCode = 302;
+        context.res.end();
+    }
+
+    return {props: {session: session}};
+};
