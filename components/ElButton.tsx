@@ -9,7 +9,7 @@ export default function ElButton({onClick, disabled, isLoading, href, text = fal
     text?: boolean,
     children: ReactNode,
 }) {
-    const ElButtonStyling = "p-2 transition mr-2"
+    const ElButtonStyling = "p-2 transition mr-2 el-font-display uppercase font-medium"
         + (text ? " hover:bg-gray-50" : " bg-gray-700 text-white hover:bg-black transition")
         + ((disabled || isLoading) ? " opacity-50 cursor-not-allowed" : "");
 
