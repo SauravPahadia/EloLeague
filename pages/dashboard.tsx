@@ -5,34 +5,11 @@ import SignInButton from "../components/SignInButton";
 import useSWR from "swr";
 import Modal from 'react-modal';
 
-const fetcher = (url) => {
-    return {
-        leagues: [
-            { 
-                name: "Maple Hall Dorm", 
-                code: "ACXDET", 
-                numPlayers: 10, 
-                lastGamePlayed: new Date(), 
-            }, 
-            {
-                name: "Edyfi", 
-                code: "QQEOKD", 
-                numPlayers: 14, 
-                lastGamePlayed: new Date(), 
-            }, 
-            {
-                name: "Farmington Nationals", 
-                code: "LP39AS", 
-                numPlayers: 4, 
-                lastGamePlayed: new Date(), 
-            }
-        ]
-    }
-}
 
 export default function Dashboard() {
     const user = {uid: "asdf"} // replace with session information
-    const { data, error} = useSWR(`/api/leagues/${user.uid}`, fetcher);
+    const { data, error} = useSWR(`/api/leagues?uid=${user.uid}`, (url) => fetch(url).then(resp => resp.json()));
+    console.log(data);
     const [modalIsOpen,setIsOpen] = useState(false);
     
     const customStyles = {
@@ -81,7 +58,7 @@ export default function Dashboard() {
                             <td>{league.name}</td>
                             <td>{league.code}</td>
                             <td>{league.numPlayers}</td>
-                            <td>{league.lastGamePlayed.toDateString()}</td>
+                            <td>{league.lastGamePlayed}</td>
                         </tr>
                     );
                 })}
