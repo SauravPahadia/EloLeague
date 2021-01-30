@@ -15,7 +15,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = await getSession(context);
 
     if (session) {
-        context.res.setHeader("location", session.userId ? "/projects" : "/auth/newaccount");
+        context.res.setHeader("location", "/leagues");
         context.res.statusCode = 302;
         context.res.end();
     }

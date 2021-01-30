@@ -5,7 +5,7 @@ import React from "react";
 export default function SignInButton() {
     return (
         <button
-            className="up-button primary"
+            className="bg-black text-white"
             onClick={() => signIn("google")}
         >
             <div className="flex items-center">
