@@ -1,4 +1,8 @@
+import {useSession} from "next-auth/client";
+
 export default function Home() {
+    const [session, loading] = useSession();
+
     return (
         <div className="bg-black w-full text-white">
             <div className="max-w-4xl mx-auto px-4 py-16">
