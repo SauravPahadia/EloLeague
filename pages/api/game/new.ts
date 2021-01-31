@@ -78,6 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 elo2_before: elo2before,
                 elo2_after: elo2after,
                 league_id: req.body.leagueId,
+                winner: req.body.score1 > req.body.score2 ? req.body.player1 : req.body.player2,
+                loser: req.body.score1 > req.body.score2 ? req.body.player2 : req.body.player1
             }
         ]);
 
