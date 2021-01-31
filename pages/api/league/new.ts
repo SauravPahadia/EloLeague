@@ -43,7 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         ]);
 
-    console.log(data);
 
     return res.status(200).json({league: data});
 }
