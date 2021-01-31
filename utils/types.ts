@@ -21,3 +21,17 @@ export interface LeagueObj {
     description?: string,
     players?: string[],
 }
+
+export interface GameObj {
+    id: number,
+    league_id: number,
+    player1: string,
+    player2: string,
+    score1: number,
+    score2: number,
+    elo1_before: number,
+    elo2_before: number,
+    elo1_after: number,
+    elo2_after: number,
+    date: string,
+}
