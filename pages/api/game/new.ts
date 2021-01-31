@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .select("*")
         .eq("id", req.body.leagueId);
     if (leagues.length === 0) return res.status(404).json({message: "League not found"});
-    if ((leagues[0].code !== req.body.code) && (session && leagues[0].user_id !== session.userId)) {
+    if ((leagues[0].code !== req.body.code) && (!session || (session && leagues[0].user_id !== session.userId))) {
         return res.status(200).json({unauth: true});
     }
 
@@ -62,8 +62,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const expected1 = 1 / (1 + 10 ** ((elo2before - elo1before)/400));
     const expected2 = 1 / (1 + 10 ** ((elo1before - elo2before)/400));
-    const elo1after = elo1before + 20 * (+(req.body.score1 > req.body.score2) - expected1);
-    const elo2after = elo2before + 20 * (+(req.body.score2 > req.body.score1) - expected2);
+    const elo1after = elo1before + 20 * (+(+req.body.score1 > +req.body.score2) - expected1);
+    const elo2after = elo2before + 20 * (+(+req.body.score2 > +req.body.score1) - expected2);
 
     const {data, error} = await supabase
         .from<GameObj>("Games")

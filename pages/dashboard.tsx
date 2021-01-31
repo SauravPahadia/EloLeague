@@ -112,7 +112,7 @@ export default function Dashboard(props: {session: SessionObj}) {
                 <ElButton onClick={onCreateLeague} isLoading={newLeagueLoading}>
                     Create
                 </ElButton>
-                <ElButton text={true} onClick={onCancelCreateLeague}>
+                <ElButton text={true} onClick={onCancelCreateLeague} disabled={newLeagueLoading}>
                     Cancel
                 </ElButton>
             </ElModal>
