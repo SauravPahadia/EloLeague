@@ -11,11 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!req.query.userId) return res.status(406).json({message: "Missing user ID"});
 
     // check auth
-    console.log(req);
     const session = await getSession({req});
     if (!session) return res.status(403).json({message: "You must be logged in to view your leagues."});
 
-    // check url_name uniqueness
+    // fetch leagues
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
     const {data: leagues, error: _} = await supabase
         .from<LeagueObj>("Leagues")

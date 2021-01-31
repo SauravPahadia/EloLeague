@@ -1,10 +1,10 @@
 import {GetServerSideProps} from "next";
-import {LeagueObj} from "../utils/types";
+import {GameObj, LeagueObj} from "../utils/types";
 import {getSession, useSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import ElH1 from "../components/ElH1";
 import ElButton from "../components/ElButton";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import ElModal from "../components/ElModal";
 import ElH2 from "../components/ElH2";
 import ElH3 from "../components/ElH3";
@@ -12,6 +12,9 @@ import ElInput from "../components/ElInput";
 import axios, {AxiosError, AxiosResponse} from "axios";
 import {BiArrowBack} from "react-icons/bi";
 import Link from "next/link";
+import useSWR, {responseInterface} from "swr";
+import {fetcher} from "../utils/fetcher";
+import {format} from "date-fns";
 
 export default function League({league}: {league: LeagueObj}) {
     const [session, loading] = useSession();
@@ -24,6 +27,22 @@ export default function League({league}: {league: LeagueObj}) {
     const [code, setCode] = useState<string>("");
     const [newGameLoading, setNewGameLoading] = useState<boolean>(false);
     const [unauth, setUnauth] = useState<boolean>(false);
+    const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
+    const [playerRatings, setPlayerRatings] = useState<{player: string, rating: number}[]>(null);
+
+    useEffect(() => {
+        const allPlayers: string[] = games && games.length > 0 && games.reduce((a, b) => [...a, b.player1, b.player2], []);
+        const playerNames: string[] = allPlayers && allPlayers.filter((d, i, a) => i === a.findIndex(x => x === d));
+        const newPlayerRatings: {player: string, rating: number}[] = playerNames.map(player => ({
+            player: player,
+            rating: function(){
+                const latestGame = games.find(d => d.player1 === player || d.player2 === player);
+                const keyName = latestGame.player1 === player ? "elo1_after" : "elo2_after";
+                return latestGame[keyName];
+            }()
+        })).sort((a, b) => +(a.rating > b.rating));
+        setPlayerRatings(newPlayerRatings);
+    }, [games]);
 
     function onSubmitGame() {
         setNewGameLoading(true);
@@ -123,6 +142,60 @@ export default function League({league}: {league: LeagueObj}) {
                             Cancel
                         </ElButton>
                     </ElModal>
+                </div>
+            </div>
+            <hr className="my-6"/>
+            <div className="md:flex -mx-4">
+                <div className="md:w-1/2 md:mx-4">
+                    <ElH3>Player rankings</ElH3>
+                    <table>
+                        <thead>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Elo</th>
+                        </thead>
+                        {playerRatings && playerRatings.map((playerObj, i) => (
+                            <tr>
+                                <td>{i + 1}</td>
+                                <td>{playerObj.player}</td>
+                                <td>{Math.round(playerObj.rating)}</td>
+                            </tr>
+                        ))}
+                    </table>
+                </div>
+                <div className="md:w-1/2 md:mx-4">
+                    <ElH3>Latest games</ElH3>
+                    {games && (games.length > 0 ? (
+                        games.map((game, i, a) => (
+                            <>
+                                {(i === 0 || format(new Date(game.date), "yyyy-MM-dd") !== format(new Date(a[i-1].date), "yyyy-MM-dd")) && (
+                                    <p className="border-b-2 pb-2 mt-6 text-gray-400">{format(new Date(game.date), "EEEE, MMMM d, yyyy")}</p>
+                                )}
+                                <div className="py-4 border-b">
+                                    <p className="text-sm opacity-50 text-center">{format(new Date(game.date), "h:mm a")}</p>
+                                    <div className="flex items-center">
+                                        <div className="w-1/3">
+                                            <p className={(game.score1 > game.score2) ? "font-bold" : "opacity-50"}>{game.player1}</p>
+                                            <p className="text-sm opacity-75">{Math.round(game.elo1_before)} → {Math.round(game.elo1_after)}</p>
+                                        </div>
+                                        <p className="text-xl w-1/3 text-center">
+                                            <span className={(game.score1 > game.score2) ? "font-bold" : "opacity-50"}>{game.score1}</span>
+                                            <span className="opacity-25"> | </span>
+                                            <span className={(game.score2 > game.score1) ? "font-bold" : "opacity-50"}>{game.score2}</span>
+                                        </p>
+                                        <div className="text-right w-1/3">
+                                            <p className={(game.score2 > game.score1) ? "font-bold" : "opacity-50"}>{game.player2}</p>
+                                            <p className="text-sm opacity-75">{Math.round(game.elo2_before)} → {Math.round(game.elo2_after)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ))
+                    ) : isAdmin ? (
+                        <p>You haven't logged any games yet. Hit the "Log new game" button to log games, or send the link to this page and the league access code to your friends!</p>
+                    ) : (
+                        <p>No games have been logged in this league.</p>
+                    ))}
                 </div>
             </div>
         </div>
