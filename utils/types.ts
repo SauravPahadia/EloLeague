@@ -37,3 +37,10 @@ export interface GameObj {
     winner: string, 
     loser: string
 }
+
+export interface PlayerStandingObj {
+    name: string,
+    rating: number,
+    wins: GameObj[], // this should eventually be count but for now it's broken
+    losses: GameObj[], // same as above
+}

@@ -1,5 +1,5 @@
 import {GetServerSideProps} from "next";
-import {GameObj, LeagueObj} from "../utils/types";
+import {GameObj, LeagueObj, PlayerStandingObj} from "../utils/types";
 import {getSession, useSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import ElH1 from "../components/ElH1";
@@ -28,7 +28,7 @@ export default function League({league}: {league: LeagueObj}) {
     const [newGameLoading, setNewGameLoading] = useState<boolean>(false);
     const [unauth, setUnauth] = useState<boolean>(false);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
-    const {data: playerRatings, error: playerRatingsError}: responseInterface<any, any> = useSWR(`api/league/standings?leagueId=${league.id}`, fetcher);
+    const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}`, fetcher);
 
     function onSubmitGame() {
         setNewGameLoading(true);
