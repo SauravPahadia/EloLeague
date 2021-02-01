@@ -82,7 +82,7 @@ export default function Dashboard(props: {session: SessionObj}) {
                     </a>
                 </Link>
             ))}
-            <ElModal isOpen={newLeagueOpen} setIsOpen={setNewLeagueOpen}>
+            <ElModal isOpen={newLeagueOpen} closeModal={onCancelCreateLeague}>
                 <ElH2>New league</ElH2>
                 <p className="my-2">
                     Leagues left in your <b>{props.session.tier}</b> plan: {props.session.tier === "free" ? (

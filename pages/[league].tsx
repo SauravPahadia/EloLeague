@@ -66,6 +66,8 @@ export default function League({league}: {league: LeagueObj}) {
         setPlayer2("");
         setScore2(0);
         setCode("");
+        setUnauth(false);
+        setUnauthMessage("");
         setNewGameOpen(false);
     }
 
@@ -80,7 +82,7 @@ export default function League({league}: {league: LeagueObj}) {
         }).then(res => {
             // change dummy param to trigger standings re-query
             setPlayerIteration(playerIteration + 1);
-            onCancelSSubmitPlayer();
+            onCancelSubmitPlayer();
         }).catch((e: AxiosError) => {
             setNewPlayerLoading(false);
             if (e.response.status === 403) {
@@ -91,9 +93,11 @@ export default function League({league}: {league: LeagueObj}) {
         });
     }
 
-    function onCancelSSubmitPlayer() {
+    function onCancelSubmitPlayer() {
         setNewPlayerOpen(false);
         setNewPlayerName("");
+        setUnauth(false);
+        setUnauthMessage("");
         setCode("");
     }
 
@@ -124,7 +128,7 @@ export default function League({league}: {league: LeagueObj}) {
                             <ElButton onClick={() => setNewPlayerOpen(true)}>
                                 Add new player
                             </ElButton>
-                            <ElModal isOpen={newPlayerOpen} setIsOpen={setNewPlayerOpen}>
+                            <ElModal isOpen={newPlayerOpen} closeModal={onCancelSubmitPlayer}>
                                 <ElH2>Add new player</ElH2>
                                 <hr className="my-6"/>
                                 <ElH3>Player name</ElH3>
@@ -144,7 +148,7 @@ export default function League({league}: {league: LeagueObj}) {
                                 <ElButton onClick={onSubmitPlayer} isLoading={newPlayerLoading}>
                                     Add
                                 </ElButton>
-                                <ElButton text={true} onClick={onCancelSSubmitPlayer} disabled={newPlayerLoading}>
+                                <ElButton text={true} onClick={onCancelSubmitPlayer} disabled={newPlayerLoading}>
                                     Cancel
                                 </ElButton>
                             </ElModal>
@@ -178,7 +182,7 @@ export default function League({league}: {league: LeagueObj}) {
                             <ElButton onClick={() => setNewGameOpen(true)}>
                                 Log new game
                             </ElButton>
-                            <ElModal isOpen={newGameOpen} setIsOpen={setNewGameOpen}>
+                            <ElModal isOpen={newGameOpen} closeModal={onCancelSubmitGame}>
                                 <ElH2>Log new game</ElH2>
                                 <hr className="my-6"/>
                                 <div className="flex -mx-2">
