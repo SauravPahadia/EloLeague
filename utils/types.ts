@@ -2,14 +2,17 @@ import {SessionBase} from "next-auth/_utils";
 
 export interface SessionObj extends SessionBase {
     userId: number,
+    tier: "free" | "individual" | "club",
+    numAllowedLeagues: number,
 }
 
 export interface UserObj {
     id: number,
     email: string,
     name: string,
-    image?: string,
-    leagues?: number[],
+    leagues: number[],
+    tier: "free" | "individual" | "club",
+    num_leagues_allowed: number,
 }
 
 export interface LeagueObj {

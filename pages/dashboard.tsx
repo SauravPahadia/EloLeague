@@ -84,37 +84,50 @@ export default function Dashboard(props: {session: SessionObj}) {
             ))}
             <ElModal isOpen={newLeagueOpen} setIsOpen={setNewLeagueOpen}>
                 <ElH2>New league</ElH2>
-                <p className="my-2">Leagues left in your free plan: 1/1</p>
+                <p className="my-2">Leagues left in your free plan: {leagues ?
+                    0 :
+                    props.session.numAllowedLeagues - leagues.length > 0 ? props.session.numAllowedLeagues - leagues.length : 0}
+                    /{props.session.numAllowedLeagues}
+                </p>
                 <hr className="my-6"/>
-                <ElH3>League name</ElH3>
-                <ElInput value={name} setValue={setName} placeholder="Example House Ping Pong League"/>
-                <hr className="my-6"/>
-                <ElH3>League URL name</ElH3>
-                <p className="my-2">Players will be able to view rankings and log games at this link.</p>
-                <div className="flex items-center">
-                    <p className="text-lg mr-1">eloleague.com/</p>
-                    <ElInput value={urlName} setValue={setUrlName} placeholder="example-ping-pong"/>
-                </div>
-                {urlNameError && (
-                    <p className="my-2 text-red-500">Invalid URL name</p>
+                {leagues && (leagues.length < props.session.numAllowedLeagues) ? (
+                    <>
+                        <ElH3>League name</ElH3>
+                        <ElInput value={name} setValue={setName} placeholder="Example House Ping Pong League"/>
+                        <hr className="my-6"/>
+                        <ElH3>League URL name</ElH3>
+                        <p className="my-2">Players will be able to view rankings and log games at this link.</p>
+                        <div className="flex items-center">
+                            <p className="text-lg mr-1">eloleague.com/</p>
+                            <ElInput value={urlName} setValue={setUrlName} placeholder="example-ping-pong"/>
+                        </div>
+                        {urlNameError && (
+                            <p className="my-2 text-red-500">Invalid URL name</p>
+                        )}
+                        {urlNameNotUnique && (
+                            <p className="my-2 text-red-500">URL name already taken</p>
+                        )}
+                        <hr className="my-6"/>
+                        <ElH3>League description (optional)</ElH3>
+                        <ElInput
+                            value={description}
+                            setValue={setDescription}
+                            placeholder="Informal ping pong rankings for Example House"
+                        />
+                        <hr className="my-6"/>
+                        <ElButton onClick={onCreateLeague} isLoading={newLeagueLoading}>
+                            Create
+                        </ElButton>
+                        <ElButton text={true} onClick={onCancelCreateLeague} disabled={newLeagueLoading}>
+                            Cancel
+                        </ElButton>
+                    </>
+                ) : (
+                    <>
+                        <p>Upgrade to an Individual or Club plan to create more leagues.</p>
+                        <ElButton className="mt-4">Start free trial</ElButton>
+                    </>
                 )}
-                {urlNameNotUnique && (
-                    <p className="my-2 text-red-500">URL name already taken</p>
-                )}
-                <hr className="my-6"/>
-                <ElH3>League description (optional)</ElH3>
-                <ElInput
-                    value={description}
-                    setValue={setDescription}
-                    placeholder="Informal ping pong rankings for Example House"
-                />
-                <hr className="my-6"/>
-                <ElButton onClick={onCreateLeague} isLoading={newLeagueLoading}>
-                    Create
-                </ElButton>
-                <ElButton text={true} onClick={onCancelCreateLeague} disabled={newLeagueLoading}>
-                    Cancel
-                </ElButton>
             </ElModal>
         </div>
     )

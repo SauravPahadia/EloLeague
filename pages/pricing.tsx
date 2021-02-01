@@ -32,7 +32,7 @@ export default function Pricing() {
                     <ul className={priceDescriptClass}>
                         <li>Unlimited leagues</li>
                     </ul>
-                    <ElButton className={priceButtonClass}>Life of the party</ElButton>
+                    <ElButton className={priceButtonClass}>Start free trial</ElButton>
                 </div>
                 <div className={priceContainerClass}>
                     <ElH2>Club</ElH2>
@@ -41,7 +41,7 @@ export default function Pricing() {
                         <li>Unlimited leagues</li>
                         <li>Unlimited tournaments</li>
                     </ul>
-                    <ElButton className={priceButtonClass}>Go pro</ElButton>
+                    <ElButton className={priceButtonClass}>Start free trial</ElButton>
                 </div>
             </div>
         </div>
