@@ -28,21 +28,7 @@ export default function League({league}: {league: LeagueObj}) {
     const [newGameLoading, setNewGameLoading] = useState<boolean>(false);
     const [unauth, setUnauth] = useState<boolean>(false);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
-    const [playerRatings, setPlayerRatings] = useState<{player: string, rating: number}[]>(null);
-
-    useEffect(() => {
-        const allPlayers: string[] = games && games.length > 0 && games.reduce((a, b) => [...a, b.player1, b.player2], []);
-        const playerNames: string[] = allPlayers && allPlayers.filter((d, i, a) => i === a.findIndex(x => x === d));
-        const newPlayerRatings: {player: string, rating: number}[] = playerNames.map(player => ({
-            player: player,
-            rating: function(){
-                const latestGame = games.find(d => d.player1 === player || d.player2 === player);
-                const keyName = latestGame.player1 === player ? "elo1_after" : "elo2_after";
-                return latestGame[keyName];
-            }()
-        })).sort((a, b) => +(a.rating > b.rating));
-        setPlayerRatings(newPlayerRatings);
-    }, [games]);
+    const {data: playerRatings, error: playerRatingsError}: responseInterface<any, any> = useSWR(`api/league/standings?leagueId=${league.id}`, fetcher);
 
     function onSubmitGame() {
         setNewGameLoading(true);
@@ -153,12 +139,16 @@ export default function League({league}: {league: LeagueObj}) {
                             <th>Rank</th>
                             <th>Player</th>
                             <th>Elo</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
                         </thead>
                         {playerRatings && playerRatings.map((playerObj, i) => (
                             <tr>
                                 <td>{i + 1}</td>
-                                <td>{playerObj.player}</td>
+                                <td>{playerObj.name}</td>
                                 <td>{Math.round(playerObj.rating)}</td>
+                                <td>{playerObj.wins ? playerObj.wins.length : 0}</td>
+                                <td>{playerObj.losses ? playerObj.losses.length : 0}</td>
                             </tr>
                         ))}
                     </table>

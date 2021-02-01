@@ -34,38 +34,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let leagueStandings = [];
     if (league) {
-         leagueStandings = league.players.map(async player => {
+         leagueStandings = await Promise.all(league.players.map(async player => {
             const {data: rating, error: ratingError} = await supabase
                 .from<GameObj>("Games")
                 .select("elo1_after, elo2_after, player1, player2")
                 .or(`player1.eq.${player},player2.eq.${player}`)
                 .order("date", {ascending: false})
                 .limit(1);
-            let elo = null;
+
+            let elo = 1000;
             if (rating.length > 0) {
                 const { player1, player2, elo2_after, elo1_after } = rating[0];
                 elo = player === player1 ? elo1_after : elo2_after;
             }
 
-            const {data: wins, error: gameWinnerError} = await supabase 
+            const {data: wins, error: gameWinnerError} = await supabase
                 .from<GameObj>("Games")
                 .select("*", {count: "exact"})
-                .or(`player1.eq.${player},player2.eq.${player}`)
+                .eq("league_id", +req.query.leagueId)
                 .eq("winner", player);
 
-            const {data: losses, error: gameLoserError} = await supabase 
+            const {data: losses, error: gameLoserError} = await supabase
                 .from<GameObj>("Games")
                 .select("*", {count: "exact"})
-                .or(`player1.eq.${player},player2.eq.${player}`)
+                .eq("league_id", +req.query.leagueId)
                 .eq("loser", player);
 
             return ({
-                name: player, 
-                rating: elo, 
+                name: player,
+                rating: elo,
                 wins: wins,
-                losses:  losses
+                losses: losses,
             });
-        });
+        }));
     }
 
     return res.status(200).json(leagueStandings);
