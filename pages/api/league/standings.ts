@@ -38,6 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const {data: rating, error: ratingError} = await supabase
                 .from<GameObj>("Games")
                 .select("elo1_after, elo2_after, player1, player2")
+                .eq("league_id", +req.query.leagueId)
                 .or(`player1.eq.${player},player2.eq.${player}`)
                 .order("date", {ascending: false})
                 .limit(1);
