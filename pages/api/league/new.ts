@@ -2,7 +2,7 @@ import {NextApiRequest, NextApiResponse} from "next";
 import {getSession} from "next-auth/client";
 import {makecode} from "../../../utils/makecode";
 import {createClient} from "@supabase/supabase-js";
-import {LeagueObj} from "../../../utils/types";
+import {LeagueObj, UserObj} from "../../../utils/types";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // check method
@@ -28,10 +28,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const name = req.body.name;
     const url_name = req.body.urlName;
     const code = makecode();
+
     const user_id = session.userId;
     const description = req.body.description || "";
 
-    const {data, error} = await supabase
+    const {data: userData, error: userError} = await supabase
+        .from<UserObj>("Users")
+        .select("leagues")
+        .eq("id", user_id)
+        .single();
+
+    if (!userData) return res.status(500).json({message: "User not found for given userId"});
+
+    const {data: leagueData, error: leagueError} = await supabase
         .from<LeagueObj>("Leagues")
         .insert([
             {
@@ -43,6 +52,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         ]);
 
+    const newUserLeagues = [...userData.leagues, leagueData[0].id];
 
-    return res.status(200).json({league: data});
+    const {data: userUpdateData, error: userUpdateError} = await supabase
+        .from<UserObj>("Users")
+        .update({ leagues: newUserLeagues })
+        .eq("id", user_id);
+
+    return res.status(200).json({league: leagueData});
 }

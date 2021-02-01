@@ -29,7 +29,6 @@ const options: InitOptions = {
                         {
                             email: user.email,
                             name: user.name,
-                            image: user.image,
                         },
                     ]);
                 userRecord = newUser[0];
@@ -39,6 +38,8 @@ const options: InitOptions = {
 
             let newSession: SessionObj = {
                 userId: userRecord.id,
+                tier: userRecord.tier,
+                numAllowedLeagues: userRecord.num_leagues_allowed,
                 ...session,
             };
 
