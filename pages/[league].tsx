@@ -15,6 +15,8 @@ import Link from "next/link";
 import useSWR, {responseInterface} from "swr";
 import {fetcher} from "../utils/fetcher";
 import {format} from "date-fns";
+import Skeleton from "react-loading-skeleton";
+import Select from "react-select";
 
 export default function League({league}: {league: LeagueObj}) {
     const [session, loading] = useSession();
@@ -26,9 +28,13 @@ export default function League({league}: {league: LeagueObj}) {
     const [score2, setScore2] = useState<number>(0);
     const [code, setCode] = useState<string>("");
     const [newGameLoading, setNewGameLoading] = useState<boolean>(false);
+    const [newPlayerOpen, setNewPlayerOpen] = useState<boolean>(false);
+    const [newPlayerLoading, setNewPlayerLoading] = useState<boolean>(false);
+    const [newPlayerName, setNewPlayerName] = useState<string>("");
+    const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
-    const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}`, fetcher);
+    const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
     function onSubmitGame() {
         setNewGameLoading(true);
@@ -63,6 +69,36 @@ export default function League({league}: {league: LeagueObj}) {
         setNewGameOpen(false);
     }
 
+    function onSubmitPlayer() {
+        setNewPlayerLoading(true);
+        setUnauth(false);
+
+        axios.post("/api/league/player", {
+            leagueId: league.id,
+            name: newPlayerName,
+        }).then(res => {
+            if (res.data.unauth) {
+                setUnauth(true);
+            } else {
+                // change dummy param to trigger standings re-query
+                setPlayerIteration(playerIteration + 1);
+                onCancelSSubmitPlayer();
+            }
+        }).catch((e: AxiosError) => {
+            setNewPlayerLoading(false);
+            console.log(e);
+        });
+    }
+
+    function onCancelSSubmitPlayer() {
+        setNewPlayerOpen(false);
+        setNewPlayerName("");
+        setCode("");
+    }
+
+    const thClass = "font-normal pb-2";
+    const tdClass = "py-4 border-b";
+
     return (
         <div className="max-w-4xl mx-auto px-4">
             {isAdmin && (
@@ -73,88 +109,134 @@ export default function League({league}: {league: LeagueObj}) {
                     </a>
                 </Link>
             )}
-            <div className="flex items-end">
-                <div>
-                    <ElH1>{league.name}</ElH1>
-                    <p className="text-lg">{league.description || (isAdmin ? <span className="opacity-50">Add a description</span> : "")}</p>
-                    {isAdmin && (
-                        <p className="text-lg">Access code: <span className="el-font-display">{league.code}</span></p>
-                    )}
-                </div>
-                <div className="ml-auto mb-6">
-                    <ElButton onClick={() => setNewGameOpen(true)}>
-                        Log new game
-                    </ElButton>
-                    <ElModal isOpen={newGameOpen} setIsOpen={setNewGameOpen}>
-                        <ElH2>Log new game</ElH2>
-                        <hr className="my-6"/>
-                        <div className="flex -mx-2">
-                            <div className="mx-2">
-                                <ElH3>Player 1</ElH3>
-                                <ElInput value={player1} setValue={setPlayer1}/>
-                            </div>
-                            <div className="mx-2">
-                                <ElH3>P1 score</ElH3>
-                                <ElInput value={score1} setValue={setScore1} type="number"/>
-                            </div>
-                        </div>
-                        <hr className="my-6"/>
-                        <div className="flex -mx-2">
-                            <div className="mx-2">
-                                <ElH3>Player 2</ElH3>
-                                <ElInput value={player2} setValue={setPlayer2}/>
-                            </div>
-                            <div className="mx-2">
-                                <ElH3>P2 score</ElH3>
-                                <ElInput value={score2} setValue={setScore2} type="number"/>
-                            </div>
-                        </div>
-                        <hr className="my-6"/>
-                        {!isAdmin && (
-                            <>
-                                <ElH3>Access code</ElH3>
-                                <p>Ask your league admin for the access code.</p>
-                                <ElInput value={code} setValue={setCode}/>
-                                {unauth && (
-                                    <p className="my-2 text-red-500">Incorrect access code</p>
-                                )}
-                                <hr className="my-6"/>
-                            </>
-                        )}
-                        <ElButton onClick={onSubmitGame} isLoading={newGameLoading}>
-                            Create
-                        </ElButton>
-                        <ElButton text={true} onClick={onCancelSubmitGame} disabled={newGameLoading}>
-                            Cancel
-                        </ElButton>
-                    </ElModal>
-                </div>
-            </div>
+            <ElH1>{league.name}</ElH1>
+            <p className="text-lg">{league.description || (isAdmin ? <span className="opacity-50">Add a description</span> : "")}</p>
+            {isAdmin && (
+                <p className="text-lg">Access code: <span className="el-font-display">{league.code}</span></p>
+            )}
             <hr className="my-6"/>
             <div className="md:flex -mx-4">
                 <div className="md:w-1/2 md:mx-4">
-                    <ElH3>Player rankings</ElH3>
-                    <table>
-                        <thead>
-                            <th>Rank</th>
-                            <th>Player</th>
-                            <th>Elo</th>
-                            <th>Wins</th>
-                            <th>Losses</th>
+                    <div className="flex items-center">
+                        <ElH3>Player rankings</ElH3>
+                        <div className="ml-auto">
+                            <ElButton onClick={() => setNewPlayerOpen(true)}>
+                                Add new player
+                            </ElButton>
+                            <ElModal isOpen={newPlayerOpen} setIsOpen={setNewPlayerOpen}>
+                                <ElH2>Add new player</ElH2>
+                                <hr className="my-6"/>
+                                <ElH3>Player name</ElH3>
+                                <ElInput value={newPlayerName} setValue={setNewPlayerName}/>
+                                <hr className="my-6"/>
+                                {!isAdmin && (
+                                    <>
+                                        <ElH3>Access code</ElH3>
+                                        <p>Ask your league admin for the access code.</p>
+                                        <ElInput value={code} setValue={setCode}/>
+                                        {unauth && (
+                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                        )}
+                                        <hr className="my-6"/>
+                                    </>
+                                )}
+                                <ElButton onClick={onSubmitPlayer} isLoading={newPlayerLoading}>
+                                    Add
+                                </ElButton>
+                                <ElButton text={true} onClick={onCancelSSubmitPlayer} disabled={newPlayerLoading}>
+                                    Cancel
+                                </ElButton>
+                            </ElModal>
+                        </div>
+                    </div>
+                    <table className="w-full mt-6">
+                        <thead className="text-gray-400 text-left border-b-2">
+                            <th className={thClass}>Rank</th>
+                            <th className={thClass}>Player</th>
+                            <th className={thClass}>Elo</th>
+                            <th className={thClass}>Wins</th>
+                            <th className={thClass}>Losses</th>
                         </thead>
-                        {playerRatings && playerRatings.map((playerObj, i) => (
+                        {playerRatings ? playerRatings.map((playerObj, i) => (
                             <tr>
-                                <td>{i + 1}</td>
-                                <td>{playerObj.name}</td>
-                                <td>{Math.round(playerObj.rating)}</td>
-                                <td>{playerObj.wins ? playerObj.wins.length : 0}</td>
-                                <td>{playerObj.losses ? playerObj.losses.length : 0}</td>
+                                <td className={tdClass}>{i + 1}</td>
+                                <td className={tdClass}>{playerObj.name}</td>
+                                <td className={tdClass}>{Math.round(playerObj.rating)}</td>
+                                <td className={tdClass}>{playerObj.wins || 0}</td>
+                                <td className={tdClass}>{playerObj.losses || 0}</td>
                             </tr>
-                        ))}
+                        )) : (
+                            <Skeleton count={5} className="w-full"/>
+                        )}
                     </table>
                 </div>
                 <div className="md:w-1/2 md:mx-4">
-                    <ElH3>Latest games</ElH3>
+                    <div className="flex items-center">
+                        <ElH3>Latest games</ElH3>
+                        <div className="ml-auto">
+                            <ElButton onClick={() => setNewGameOpen(true)}>
+                                Log new game
+                            </ElButton>
+                            <ElModal isOpen={newGameOpen} setIsOpen={setNewGameOpen}>
+                                <ElH2>Log new game</ElH2>
+                                <hr className="my-6"/>
+                                <div className="flex -mx-2">
+                                    <div className="mx-2 w-1/2">
+                                        <ElH3>Player 1</ElH3>
+                                        <Select
+                                            value={{label: player1, value: player1}}
+                                            onChange={selected => {
+                                                console.log(selected);
+                                                setPlayer1(selected.value);
+                                            }}
+                                            options={league.players.map(player => ({label: player, value: player}))}
+                                            filterOption={label => label !== player2}
+                                            className="w-full my-2"
+                                        />
+                                    </div>
+                                    <div className="mx-2 w-1/2">
+                                        <ElH3>P1 score</ElH3>
+                                        <ElInput value={score1} setValue={setScore1} type="number"/>
+                                    </div>
+                                </div>
+                                <hr className="my-6"/>
+                                <div className="flex -mx-2">
+                                    <div className="mx-2 w-1/2">
+                                        <ElH3>Player 2</ElH3>
+                                        <Select
+                                            value={{label: player2, value: player2}}
+                                            onChange={selected => setPlayer2(selected.value)}
+                                            options={league.players.map(player => ({label: player, value: player}))}
+                                            filterOption={({label}) => label !== player1}
+                                            className="w-full my-2"
+                                        />
+                                    </div>
+                                    <div className="mx-2 w-1/2">
+                                        <ElH3>P2 score</ElH3>
+                                        <ElInput value={score2} setValue={setScore2} type="number"/>
+                                    </div>
+                                </div>
+                                <hr className="my-6"/>
+                                {!isAdmin && (
+                                    <>
+                                        <ElH3>Access code</ElH3>
+                                        <p>Ask your league admin for the access code.</p>
+                                        <ElInput value={code} setValue={setCode}/>
+                                        {unauth && (
+                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                        )}
+                                        <hr className="my-6"/>
+                                    </>
+                                )}
+                                <ElButton onClick={onSubmitGame} isLoading={newGameLoading}>
+                                    Create
+                                </ElButton>
+                                <ElButton text={true} onClick={onCancelSubmitGame} disabled={newGameLoading}>
+                                    Cancel
+                                </ElButton>
+                            </ElModal>
+                        </div>
+                    </div>
                     {games && (games.length > 0 ? (
                         games.map((game, i, a) => (
                             <>

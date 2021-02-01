@@ -63,10 +63,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return ({
                 name: player,
                 rating: elo,
-                wins: wins,
-                losses: losses,
+                wins: wins.length,
+                losses: losses.length,
             });
         }));
+
+         leagueStandings.sort((a, b) => b.rating - a.rating);
     }
 
     return res.status(200).json(leagueStandings);
