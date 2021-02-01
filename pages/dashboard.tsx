@@ -84,13 +84,16 @@ export default function Dashboard(props: {session: SessionObj}) {
             ))}
             <ElModal isOpen={newLeagueOpen} setIsOpen={setNewLeagueOpen}>
                 <ElH2>New league</ElH2>
-                <p className="my-2">Leagues left in your free plan: {leagues ?
-                    0 :
-                    props.session.numAllowedLeagues - leagues.length > 0 ? props.session.numAllowedLeagues - leagues.length : 0}
-                    /{props.session.numAllowedLeagues}
+                <p className="my-2">
+                    Leagues left in your <b>{props.session.tier}</b> plan: {props.session.tier === "free" ? (
+                        (leagues ?
+                            0 :
+                            props.session.numAllowedLeagues - (leagues && leagues.length) > 0 ? props.session.numAllowedLeagues - (leagues && leagues.length) : 0)
+                        + "/" + props.session.numAllowedLeagues
+                    ) : "unlimited"}
                 </p>
                 <hr className="my-6"/>
-                {leagues && (leagues.length < props.session.numAllowedLeagues) ? (
+                {((leagues && (leagues.length < props.session.numAllowedLeagues)) || props.session.tier !== "free")  ? (
                     <>
                         <ElH3>League name</ElH3>
                         <ElInput value={name} setValue={setName} placeholder="Example House Ping Pong League"/>
