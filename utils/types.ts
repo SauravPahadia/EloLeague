@@ -34,4 +34,6 @@ export interface GameObj {
     elo1_after: number,
     elo2_after: number,
     date: string,
+    winner: string, 
+    loser: string
 }
