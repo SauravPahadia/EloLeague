@@ -77,7 +77,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 "28d" :  changeInElo28
             }
 
-            console.log(change)
             return ({
                 name: player,
                 rating: elo,

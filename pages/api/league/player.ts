@@ -13,6 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // check auth
     const session = await getSession({req});
+    // if they are not logged in and do not have a code, return 403
     if (!session && !req.body.code) return res.status(403).json({message: "You must have an access code or be logged in to create a league."});
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -21,8 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .select("*")
         .eq("id", req.body.leagueId);
     if (leagues.length === 0) return res.status(404).json({message: "League not found"});
-    if ((leagues[0].code !== req.body.code) && (!session || (session && leagues[0].user_id !== session.userId))) {
-        return res.status(200).json({unauth: true});
+    if (req.body.code && req.body.code !== leagues[0].code) {
+        return res.status(403).json({message: "Invalid access code."});
+    } else if (leagues[0].user_id !== session.userId) {
+        return res.status(403).json({message: "You must be the league admin to create a player without a code."});
     }
 
     // check uniqueness of player name

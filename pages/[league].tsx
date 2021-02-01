@@ -33,6 +33,7 @@ export default function League({league}: {league: LeagueObj}) {
     const [newPlayerName, setNewPlayerName] = useState<string>("");
     const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
+    const [unauthMessage, setUnauthMessage] = useState<string>("");
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
     const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
@@ -48,13 +49,13 @@ export default function League({league}: {league: LeagueObj}) {
             leagueId: league.id,
         }).then((res: AxiosResponse) => {
             setNewGameLoading(false);
-            if (res.data.unauth) {
-                setUnauth(true);
-            } else {
                 onCancelSubmitGame();
-            }
         }).catch((e: AxiosError) => {
             setNewGameLoading(false);
+            if (e.response.status === 403) {
+                setUnauth(true);
+                setUnauthMessage(e.response.data.message)
+            }
             console.log(e);
         });
     }
@@ -75,16 +76,17 @@ export default function League({league}: {league: LeagueObj}) {
         axios.post("/api/league/player", {
             leagueId: league.id,
             name: newPlayerName,
+            code: code
         }).then(res => {
-            if (res.data.unauth) {
-                setUnauth(true);
-            } else {
-                // change dummy param to trigger standings re-query
-                setPlayerIteration(playerIteration + 1);
-                onCancelSSubmitPlayer();
-            }
+            // change dummy param to trigger standings re-query
+            setPlayerIteration(playerIteration + 1);
+            onCancelSSubmitPlayer();
         }).catch((e: AxiosError) => {
             setNewPlayerLoading(false);
+            if (e.response.status === 403) {
+                setUnauthMessage(e.response.data.message)
+                setUnauth(true);
+            }
             console.log(e);
         });
     }
@@ -134,7 +136,7 @@ export default function League({league}: {league: LeagueObj}) {
                                         <p>Ask your league admin for the access code.</p>
                                         <ElInput value={code} setValue={setCode}/>
                                         {unauth && (
-                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                            <p className="my-2 text-red-500">{unauthMessage}</p>
                                         )}
                                         <hr className="my-6"/>
                                     </>
@@ -221,7 +223,7 @@ export default function League({league}: {league: LeagueObj}) {
                                         <p>Ask your league admin for the access code.</p>
                                         <ElInput value={code} setValue={setCode}/>
                                         {unauth && (
-                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                            <p className="my-2 text-red-500">{unauthMessage}</p>
                                         )}
                                         <hr className="my-6"/>
                                     </>
