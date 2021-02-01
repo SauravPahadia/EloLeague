@@ -1,18 +1,3 @@
-// - return an array of players in the league:
-// [
-// 	{
-// 		name: string,
-// 		rating: number, // current rating, get from latest game
-// 		change: {
-// 			24h: number, // rating change over last 24h. Get lastest game before 24h and compare. If doesn't exist then return null
-// 			7d: number, // rating change over last 7d
-// 			28d: number, // rating change over last 28d
-// 		},
-// 		wins: number,
-// 		losses: number,
-// 	}
-// ]
-
 import {NextApiRequest, NextApiResponse} from "next";
 import {createClient} from "@supabase/supabase-js";
 import {GameObj, LeagueObj} from "../../../utils/types";
@@ -32,12 +17,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .eq("id", req.query.leagueId)
         .single();
 
-    let leagueStandings = [];
+    async function getChangeInElo (day, playerName, elo) {
+        const {data: priorGame, error: priorGameError} = await supabase 
+            .from<GameObj>("Games")
+            .select("*")
+            .eq("league_id", +req.query.leagueId)
+            .or(`player1.eq.${playerName},player2.eq.${playerName}`)
+            .order("date", {ascending: false})
+            .lte("date", new Date(Date.now() - day * 24 * 60 * 60 * 1000).toISOString())
+            .limit(1)
+
+        if (priorGame.length == 0) {
+            return null;
+        } else {
+            const game = priorGame[0]
+            if (playerName === game.player1) {
+                return elo - game.elo1_after
+            } else {
+                return elo - game.elo2_after
+            }
+        }
+    }
+
+    let leagueStandings = []
     if (league) {
          leagueStandings = await Promise.all(league.players.map(async player => {
             const {data: rating, error: ratingError} = await supabase
                 .from<GameObj>("Games")
                 .select("elo1_after, elo2_after, player1, player2")
+                .eq("league_id", String(req.query.leagueId))
                 .or(`player1.eq.${player},player2.eq.${player}`)
                 .order("date", {ascending: false})
                 .limit(1);
@@ -60,9 +68,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .eq("league_id", +req.query.leagueId)
                 .eq("loser", player);
 
+            const changeInElo1 = await getChangeInElo(1, player, elo);
+            const changeInElo7 = await getChangeInElo(14, player, elo);
+            const changeInElo28 = await getChangeInElo(28, player, elo);
+            let change= {
+                "24h": changeInElo1,
+                "7d":  changeInElo7,
+                "28d" :  changeInElo28
+            }
+
+            console.log(change)
             return ({
                 name: player,
                 rating: elo,
+                change: {
+                    "24h": changeInElo1,
+                    "7d":  changeInElo7,
+                    "28d" :  changeInElo28
+                },
                 wins: wins.length,
                 losses: losses.length,
             });

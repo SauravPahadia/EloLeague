@@ -39,12 +39,11 @@ export default function League({league}: {league: LeagueObj}) {
     function onSubmitGame() {
         setNewGameLoading(true);
         setUnauth(false);
-
         axios.post("/api/game/new", {
             player1: player1,
-            score1: score1,
+            score1: score1.toString(),
             player2: player2,
-            score2: score2,
+            score2: score2.toString(),
             code: code,
             leagueId: league.id,
         }).then((res: AxiosResponse) => {
@@ -186,7 +185,6 @@ export default function League({league}: {league: LeagueObj}) {
                                         <Select
                                             value={{label: player1, value: player1}}
                                             onChange={selected => {
-                                                console.log(selected);
                                                 setPlayer1(selected.value);
                                             }}
                                             options={league.players.map(player => ({label: player, value: player}))}
@@ -295,6 +293,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let returnLeague = {...thisLeague[0]};
 
     if (!session || returnLeague.user_id !== session.userId) delete returnLeague.code;
-
     return {props: {league: thisLeague[0]}};
 };
