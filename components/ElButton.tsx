@@ -1,13 +1,14 @@
 import Link from "next/link";
 import {ReactNode} from "react";
 
-export default function ElButton({onClick, disabled, isLoading, href, text = false, children}: {
+export default function ElButton({onClick, disabled, isLoading, href, text = false, children, className}: {
     onClick?: () => any,
     disabled?: boolean,
     isLoading?: boolean,
     href?: string,
     text?: boolean,
     children: ReactNode,
+    className?: string,
 }) {
     const ElButtonStyling = "p-2 transition mr-2 el-font-display uppercase font-medium"
         + (text ? " hover:bg-gray-50" : " bg-gray-700 text-white hover:bg-black transition")
@@ -15,10 +16,10 @@ export default function ElButton({onClick, disabled, isLoading, href, text = fal
 
     return href ? (
         <Link href={href}>
-            <a className={ElButtonStyling}>{children}</a>
+            <a className={ElButtonStyling + " " + className}>{children}</a>
         </Link>
     ) : (
-        <button onClick={onClick} disabled={disabled || isLoading} className={ElButtonStyling}>
+        <button onClick={onClick} disabled={disabled || isLoading} className={ElButtonStyling + " " + className}>
             {isLoading ? "Loading..." : children}
         </button>
     )
