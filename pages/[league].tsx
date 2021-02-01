@@ -33,29 +33,29 @@ export default function League({league}: {league: LeagueObj}) {
     const [newPlayerName, setNewPlayerName] = useState<string>("");
     const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
+    const [unauthMessage, setUnauthMessage] = useState<string>("");
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
     const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
     function onSubmitGame() {
         setNewGameLoading(true);
         setUnauth(false);
-
         axios.post("/api/game/new", {
             player1: player1,
-            score1: score1,
+            score1: score1.toString(),
             player2: player2,
-            score2: score2,
+            score2: score2.toString(),
             code: code,
             leagueId: league.id,
         }).then((res: AxiosResponse) => {
             setNewGameLoading(false);
-            if (res.data.unauth) {
-                setUnauth(true);
-            } else {
                 onCancelSubmitGame();
-            }
         }).catch((e: AxiosError) => {
             setNewGameLoading(false);
+            if (e.response.status === 403) {
+                setUnauth(true);
+                setUnauthMessage(e.response.data.message)
+            }
             console.log(e);
         });
     }
@@ -66,6 +66,8 @@ export default function League({league}: {league: LeagueObj}) {
         setPlayer2("");
         setScore2(0);
         setCode("");
+        setUnauth(false);
+        setUnauthMessage("");
         setNewGameOpen(false);
     }
 
@@ -76,23 +78,26 @@ export default function League({league}: {league: LeagueObj}) {
         axios.post("/api/league/player", {
             leagueId: league.id,
             name: newPlayerName,
+            code: code
         }).then(res => {
-            if (res.data.unauth) {
-                setUnauth(true);
-            } else {
-                // change dummy param to trigger standings re-query
-                setPlayerIteration(playerIteration + 1);
-                onCancelSSubmitPlayer();
-            }
+            // change dummy param to trigger standings re-query
+            setPlayerIteration(playerIteration + 1);
+            onCancelSubmitPlayer();
         }).catch((e: AxiosError) => {
             setNewPlayerLoading(false);
+            if (e.response.status === 403) {
+                setUnauthMessage(e.response.data.message)
+                setUnauth(true);
+            }
             console.log(e);
         });
     }
 
-    function onCancelSSubmitPlayer() {
+    function onCancelSubmitPlayer() {
         setNewPlayerOpen(false);
         setNewPlayerName("");
+        setUnauth(false);
+        setUnauthMessage("");
         setCode("");
     }
 
@@ -123,7 +128,7 @@ export default function League({league}: {league: LeagueObj}) {
                             <ElButton onClick={() => setNewPlayerOpen(true)}>
                                 Add new player
                             </ElButton>
-                            <ElModal isOpen={newPlayerOpen} setIsOpen={setNewPlayerOpen}>
+                            <ElModal isOpen={newPlayerOpen} closeModal={onCancelSubmitPlayer}>
                                 <ElH2>Add new player</ElH2>
                                 <hr className="my-6"/>
                                 <ElH3>Player name</ElH3>
@@ -135,7 +140,7 @@ export default function League({league}: {league: LeagueObj}) {
                                         <p>Ask your league admin for the access code.</p>
                                         <ElInput value={code} setValue={setCode}/>
                                         {unauth && (
-                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                            <p className="my-2 text-red-500">{unauthMessage}</p>
                                         )}
                                         <hr className="my-6"/>
                                     </>
@@ -143,7 +148,7 @@ export default function League({league}: {league: LeagueObj}) {
                                 <ElButton onClick={onSubmitPlayer} isLoading={newPlayerLoading}>
                                     Add
                                 </ElButton>
-                                <ElButton text={true} onClick={onCancelSSubmitPlayer} disabled={newPlayerLoading}>
+                                <ElButton text={true} onClick={onCancelSubmitPlayer} disabled={newPlayerLoading}>
                                     Cancel
                                 </ElButton>
                             </ElModal>
@@ -177,7 +182,7 @@ export default function League({league}: {league: LeagueObj}) {
                             <ElButton onClick={() => setNewGameOpen(true)}>
                                 Log new game
                             </ElButton>
-                            <ElModal isOpen={newGameOpen} setIsOpen={setNewGameOpen}>
+                            <ElModal isOpen={newGameOpen} closeModal={onCancelSubmitGame}>
                                 <ElH2>Log new game</ElH2>
                                 <hr className="my-6"/>
                                 <div className="flex -mx-2">
@@ -186,7 +191,6 @@ export default function League({league}: {league: LeagueObj}) {
                                         <Select
                                             value={{label: player1, value: player1}}
                                             onChange={selected => {
-                                                console.log(selected);
                                                 setPlayer1(selected.value);
                                             }}
                                             options={league.players.map(player => ({label: player, value: player}))}
@@ -223,7 +227,7 @@ export default function League({league}: {league: LeagueObj}) {
                                         <p>Ask your league admin for the access code.</p>
                                         <ElInput value={code} setValue={setCode}/>
                                         {unauth && (
-                                            <p className="my-2 text-red-500">Incorrect access code</p>
+                                            <p className="my-2 text-red-500">{unauthMessage}</p>
                                         )}
                                         <hr className="my-6"/>
                                     </>
@@ -295,6 +299,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let returnLeague = {...thisLeague[0]};
 
     if (!session || returnLeague.user_id !== session.userId) delete returnLeague.code;
-
     return {props: {league: thisLeague[0]}};
 };

@@ -24,8 +24,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .select("*")
         .eq("id", req.body.leagueId);
     if (leagues.length === 0) return res.status(404).json({message: "League not found"});
-    if ((leagues[0].code !== req.body.code) && (!session || (session && leagues[0].user_id !== session.userId))) {
-        return res.status(200).json({unauth: true});
+    if (req.body.code && req.body.code !== leagues[0].code) {
+        return res.status(403).json({message: "Invalid access code."});
+    } else if (leagues[0].user_id !== session.userId) {
+        return res.status(403).json({message: "You must be the league admin to create a game without a code."});
     }
 
     // create game
