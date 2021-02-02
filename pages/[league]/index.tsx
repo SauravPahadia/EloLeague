@@ -197,7 +197,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                             <th className={thClass}>Losses</th>
                         </thead>
                         <tbody>
-                            {playerRatings ? playerRatings.map((playerObj, i) => (
+                            {playerRatings && playerRatings.map((playerObj, i) => (
                                 <tr>
                                     {[i + 1, playerObj.name, Math.round(playerObj.rating), playerObj.wins || 0, playerObj.losses || 0].map(stat => (
                                         <td className={tdClass}>
@@ -207,11 +207,14 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                                         </td>
                                     ))}
                                 </tr>
-                            )) : (
-                                <Skeleton count={5} className="w-full"/>
-                            )}
+                            ))}
                         </tbody>
                     </table>
+                    {!playerRatings && (
+                        <div className="my-4">
+                            <Skeleton count={3} className="h-14"/>
+                        </div>
+                    )}
                 </div>
                 <div className="md:w-1/2 mx-4 pb-16">
                     <div className="flex items-center">
@@ -279,7 +282,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                             </ElModal>
                         </div>
                     </div>
-                    {games && (games.length > 0 ? (
+                    {games ? (games.length > 0 ? (
                         games.slice(0, 20).map((game, i, a) => (
                             <>
                                 {(i === 0 || format(new Date(game.date), "yyyy-MM-dd") !== format(new Date(a[i-1].date), "yyyy-MM-dd")) && (
@@ -317,7 +320,11 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                         <p>You haven't logged any games yet. Hit the "Log new game" button to log games, or send the link to this page and the league access code to your friends!</p>
                     ) : (
                         <p>No games have been logged in this league.</p>
-                    ))}
+                    )) : (
+                        <div className="my-4">
+                            <Skeleton count={3} className="h-20"/>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

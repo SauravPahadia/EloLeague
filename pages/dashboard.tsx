@@ -13,6 +13,7 @@ import {getSession} from "next-auth/client";
 import {LeagueObj, SessionObj} from "../utils/types";
 import ElH1 from "../components/ElH1";
 import Link from "next/link";
+import Skeleton from "react-loading-skeleton";
 
 export default function Dashboard(props: {session: SessionObj}) {
     const router = useRouter();
@@ -72,7 +73,7 @@ export default function Dashboard(props: {session: SessionObj}) {
                 </div>
             </div>
             <hr className="my-4"/>
-            {leagues && leagues.map(league => (
+            {leagues ? leagues.map(league => (
                 <Link href={`/${league.url_name}`}>
                     <a className="w-full p-4 shadow-md my-4 block">
                         <ElH3>{league.name}</ElH3>
@@ -81,7 +82,11 @@ export default function Dashboard(props: {session: SessionObj}) {
                         <p>Access code: <span className="el-font-display">{league.code}</span></p>
                     </a>
                 </Link>
-            ))}
+            )) : (
+                <div className="my-4">
+                    <Skeleton count={3} className="h-24"/>
+                </div>
+            )}
             <ElModal isOpen={newLeagueOpen} closeModal={onCancelCreateLeague}>
                 <ElH2>New league</ElH2>
                 <p className="my-2">
