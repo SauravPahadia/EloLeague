@@ -148,12 +148,14 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
             )}
             <ElH1>{league.name}</ElH1>
             <p className="text-lg">{league.description || (isAdmin ? <span className="opacity-50">Add a description</span> : "")}</p>
-            {isAdmin && (
+            {isAdmin ? (
                 <p className="text-lg">Access code: <span className="el-font-display">{league.code}</span></p>
+            ) : (
+                <p className="text-lg">Ask the league admin for the access code to log games or add new players.</p>
             )}
             <hr className="my-6"/>
             <div className="md:flex -mx-4">
-                <div className="md:w-1/2 md:mx-4">
+                <div className="md:w-1/2 mx-4 pb-16">
                     <div className="flex items-center">
                         <ElH3>Player rankings</ElH3>
                         <div className="ml-auto">
@@ -211,7 +213,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                         </tbody>
                     </table>
                 </div>
-                <div className="md:w-1/2 md:mx-4">
+                <div className="md:w-1/2 mx-4 pb-16">
                     <div className="flex items-center">
                         <ElH3>Latest games</ElH3>
                         <div className="ml-auto">
@@ -278,7 +280,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                         </div>
                     </div>
                     {games && (games.length > 0 ? (
-                        games.map((game, i, a) => (
+                        games.slice(0, 20).map((game, i, a) => (
                             <>
                                 {(i === 0 || format(new Date(game.date), "yyyy-MM-dd") !== format(new Date(a[i-1].date), "yyyy-MM-dd")) && (
                                     <p className="border-b-2 pb-2 mt-6 text-gray-400">{format(new Date(game.date), "EEEE, MMMM d, yyyy")}</p>
@@ -287,7 +289,11 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                                     <p className="text-sm opacity-50 text-center">{format(new Date(game.date), "h:mm a")}</p>
                                     <div className="flex items-center">
                                         <div className="w-1/3">
-                                            <p className={(game.score1 > game.score2) ? "font-bold" : "opacity-50"}>{game.player1}</p>
+                                            <Link href={`/${league.url_name}/${game.player1}`}>
+                                                <a className={(game.score1 > game.score2) ? "font-bold" : "opacity-50"}>
+                                                    {game.player1}
+                                                </a>
+                                            </Link>
                                             <p className="text-sm opacity-75">{Math.round(game.elo1_before)} → {Math.round(game.elo1_after)}</p>
                                         </div>
                                         <p className="text-xl w-1/3 text-center">
@@ -296,7 +302,11 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                                             <span className={(game.score2 > game.score1) ? "font-bold" : "opacity-50"}>{game.score2}</span>
                                         </p>
                                         <div className="text-right w-1/3">
-                                            <p className={(game.score2 > game.score1) ? "font-bold" : "opacity-50"}>{game.player2}</p>
+                                            <Link href={`/${league.url_name}/${game.player2}`}>
+                                                <a className={(game.score2 > game.score1) ? "font-bold" : "opacity-50"}>
+                                                    {game.player2}
+                                                </a>
+                                            </Link>
                                             <p className="text-sm opacity-75">{Math.round(game.elo2_before)} → {Math.round(game.elo2_after)}</p>
                                         </div>
                                     </div>

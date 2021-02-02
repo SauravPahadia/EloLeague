@@ -49,7 +49,7 @@ export default function Player({league, player}: {league: LeagueObj, player: str
             <ElH1>Player: {player}</ElH1>
             <hr className="my-6"/>
             <div className="md:flex -mx-4">
-                <div className="md:w-1/2 md:mx-4">
+                <div className="md:w-1/2 mx-4 pb-16">
                     <ElH3>Rating history</ElH3>
                     {chartData && (
                         <ResponsiveContainer width="100%" height={400} className="my-8">
@@ -91,7 +91,7 @@ export default function Player({league, player}: {league: LeagueObj, player: str
 }
                     `}}/>
                 </div>
-                <div className="md:w-1/2 md:mx-4">
+                <div className="md:w-1/2 mx-4 pb-16">
                     <ElH3>Head to heads</ElH3>
                     <table className="w-full mt-6">
                         <thead className="text-gray-400 text-left border-b-2">
