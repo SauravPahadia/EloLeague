@@ -60,16 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // get the current games players
         let player1 = game.player1
         let player2 = game.player2 
-        console.log("Current games players are " + game.player1 + " and " + game.player2)
 
         // get the current players previous games by filtering the all games array
         //const filterFunc = (g) => 
         let lastPlayer1Game = allGames.filter(g => (player1 === g.player1 || player1 === g.player2) && new Date(g.date) < new Date(game.date));
         let lastPlayer2Game = allGames.filter(g => (player2 === g.player1 || player2 === g.player2) && new Date(g.date) < new Date(game.date));
-        console.log("Games for player 1 are ")
-        console.log(lastPlayer1Game);
-        console.log("Games for player 2 are ")
-        console.log(lastPlayer2Game);
 
         // if a previous game exists, get their previous ELO, else get 1000
         let elo1before = 1000;
@@ -82,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (lastPlayer2Game.length > 0) {
             elo2before = lastPlayer2Game[lastPlayer2Game.length - 1].player1 === player2
                 ? lastPlayer2Game[lastPlayer2Game.length - 1].elo1_after
-                : lastPlayer1Game[lastPlayer2Game.length - 1].elo2_after;
+                : lastPlayer2Game[lastPlayer2Game.length - 1].elo2_after;
         }
 
         // calculate the exoected elo for each player after this game occurs
