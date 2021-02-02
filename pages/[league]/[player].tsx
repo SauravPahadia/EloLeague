@@ -16,7 +16,7 @@ export default function Player({league, player}: {league: LeagueObj, player: str
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&player=${player}`, fetcher);
     // earliest games come first
     // if a is less (earlier) than b, a should come first
-    let filteredGames = []
+    let filteredGames = [];
 
     if (games) {
         games.sort(function(a,b){
@@ -26,8 +26,8 @@ export default function Player({league, player}: {league: LeagueObj, player: str
         });
 
         for (let i = 0; i < games.length - 1; i++) {
-            let currentGameDate = new Date(games[i].date) 
-            let nextGameDate = new Date(games[i + 1].date)
+            let currentGameDate = new Date(games[i].date);
+            let nextGameDate = new Date(games[i + 1].date);
             if (currentGameDate.getFullYear() !== nextGameDate.getFullYear() ||
                 currentGameDate.getMonth() !== nextGameDate.getMonth() || 
                 currentGameDate.getDate() !== nextGameDate.getDate()) {
@@ -36,7 +36,6 @@ export default function Player({league, player}: {league: LeagueObj, player: str
         }
         filteredGames.push(games[games.length - 1]);
     }
-
 
     const chartData = games ? filteredGames.map(game => ({
         rating: game.player1 === player ? game.elo1_after : game.elo2_after,

@@ -10,7 +10,7 @@ import ElH2 from "../../components/ElH2";
 import ElH3 from "../../components/ElH3";
 import ElInput from "../../components/ElInput";
 import axios, {AxiosError, AxiosResponse} from "axios";
-import {BiArrowBack} from "react-icons/bi";
+import {BiArrowBack, BiInfoCircle} from "react-icons/bi";
 import Link from "next/link";
 import useSWR, {responseInterface} from "swr";
 import {fetcher} from "../../utils/fetcher";
@@ -150,7 +150,13 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
             <ElH1>{league.name}</ElH1>
             <p className="text-lg">{league.description || (isAdmin ? <span className="opacity-50">Add a description</span> : "")}</p>
             {isAdmin ? (
-                <p className="text-lg">Access code: <span className="el-font-display">{league.code}</span></p>
+                <div className="border p-4 my-4 flex items-center">
+                    <BiInfoCircle className="flex-shrink-0"/>
+                    <p className="text-lg ml-4">
+                        You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
+                    </p>
+                </div>
+
             ) : (
                 <p className="text-lg">Ask the league admin for the access code to log games or add new players.</p>
             )}
