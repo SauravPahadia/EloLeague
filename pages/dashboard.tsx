@@ -140,6 +140,11 @@ export default function Dashboard(props: {session: SessionObj}) {
                     </>
                 )}
             </ElModal>
+            <hr className="my-6"/>
+            <div className="flex items-center">
+                <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? Math.max(leagues.length - props.session.numAllowedLeagues, 0) : "unlimited"} leagues left.</p>
+                <ElButton className="ml-auto" href={props.session.tier === "free" ? "/pricing" : null}>{props.session.tier === "free" ? "Upgrade" : "Billing"}</ElButton>
+            </div>
         </div>
     )
 }
