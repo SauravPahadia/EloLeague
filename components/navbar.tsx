@@ -15,7 +15,7 @@ export default function Navbar() {
                     ) : (
                         <>
                             <Link href="/dashboard">
-                                <a className="underline mr-6">Dashboard</a>
+                                <a className="underline mr-6">My leagues</a>
                             </Link>
                             <button className="underline" onClick={() => signOut({callbackUrl: `${process.env.NEXTAUTH_URL}`})}>Sign out</button>
                         </>
