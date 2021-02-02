@@ -27,6 +27,7 @@ export default function League({league}: {league: LeagueObj}) {
     const [player2, setPlayer2] = useState<string>("");
     const [score2, setScore2] = useState<number>(0);
     const [code, setCode] = useState<string>("");
+    const [csvImportText, setCsvImportText] = useState<string>("");
     const [newGameLoading, setNewGameLoading] = useState<boolean>(false);
     const [newPlayerOpen, setNewPlayerOpen] = useState<boolean>(false);
     const [newPlayerLoading, setNewPlayerLoading] = useState<boolean>(false);
@@ -101,11 +102,40 @@ export default function League({league}: {league: LeagueObj}) {
         setCode("");
     }
 
+    function csvImport () {
+        let games = [];
+        const lines = csvImportText.split("\n");
+        lines.forEach(line => {
+            const values = line.split(",");
+            const game = {
+                league_id: league.id,
+                date: values[0],
+                player1: values[1],
+                player2: values[2],
+                score1: +values[3],
+                score2: +values[4],
+            }
+            games.push(game);
+        });
+
+        axios.post("/api/game/upload", {
+            gameObjArray: games,
+            leagueId: league.id
+        }).then(res => {
+           
+        }).catch((e: AxiosError) => {
+
+        });
+    }
+
     const thClass = "font-normal pb-2";
     const tdClass = "py-4 border-b";
 
     return (
         <div className="max-w-4xl mx-auto px-4">
+            
+            <textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>
+            <button onClick={csvImport}> CSV IMPORT </button>
             {isAdmin && (
                 <Link href="/dashboard">
                     <a className="flex items-center mt-8">
