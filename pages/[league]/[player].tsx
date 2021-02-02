@@ -57,7 +57,7 @@ export default function Player({league, player}: {league: LeagueObj, player: str
         }
     });
 
-    const thClass = "font-normal pb-2";
+    const thClass = "font-normal pb-2 pr-2";
     const tdClass = "py-4 border-b";
 
     return (
@@ -118,8 +118,8 @@ export default function Player({league, player}: {league: LeagueObj, player: str
                     <table className="w-full mt-6">
                         <thead className="text-gray-400 text-left border-b-2">
                             <th className={thClass}>Opponent</th>
-                            <th className={thClass}>Wins</th>
-                            <th className={thClass}>Losses</th>
+                            <th className={thClass}>{player}'s wins vs.</th>
+                            <th className={thClass}>{player}'s losses vs.</th>
                         </thead>
                         <tbody>
                             {headToHeads && headToHeads.map(opponentObj => (
