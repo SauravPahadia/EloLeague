@@ -52,6 +52,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
         }).then((res: AxiosResponse) => {
             setNewGameLoading(false);
             setGameIteration(gameIteration + 1);
+            setPlayerIteration(playerIteration + 1);
             onCancelSubmitGame();
         }).catch((e: AxiosError) => {
             setNewGameLoading(false);
@@ -124,7 +125,7 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
             gameObjArray: games,
             leagueId: league.id
         }).then(res => {
-           
+
         }).catch((e: AxiosError) => {
 
         });
