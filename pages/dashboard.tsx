@@ -64,9 +64,12 @@ export default function Dashboard(props: {session: SessionObj}) {
 
     return (
         <div className="max-w-4xl mx-auto px-4">
-            <div className="flex items-end">
-                <ElH1>Your leagues</ElH1>
-                <div className="ml-auto mb-6">
+            <div className="flex">
+                <div>
+                    <ElH1>Your leagues</ElH1>
+                    <p className="text-lg">Share a league with your friends or your club to start tracking games and player ratings.</p>
+                </div>
+                <div className="ml-auto mt-12 flex-shrink-0">
                     <ElButton onClick={() => setNewLeagueOpen(true)}>
                         New league
                     </ElButton>

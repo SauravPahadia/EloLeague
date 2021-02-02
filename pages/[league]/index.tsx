@@ -222,6 +222,13 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                             <Skeleton count={3} className="h-14"/>
                         </div>
                     )}
+                    {playerRatings && playerRatings.length === 0 && (isAdmin ? (
+                        <p className="opacity-50 mt-8">
+                            You haven't added any players yet. Hit the "Add new player" button to add players, or send the link to this page and the league access code to your friends!
+                        </p>
+                    ) : (
+                        <p className="opacity-50 mt-8">No players have been added to this league.</p>
+                    ))}
                 </div>
                 <div className="md:w-1/2 mx-4 pb-16">
                     <div className="flex items-center">
@@ -324,9 +331,9 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                             </>
                         ))
                     ) : isAdmin ? (
-                        <p>You haven't logged any games yet. Hit the "Log new game" button to log games, or send the link to this page and the league access code to your friends!</p>
+                        <p className="opacity-50 mt-8">You haven't logged any games yet. Hit the "Log new game" button to log games, or send the link to this page and the league access code to your friends!</p>
                     ) : (
-                        <p>No games have been logged in this league.</p>
+                        <p className="opacity-50 mt-8">No games have been logged in this league.</p>
                     )) : (
                         <div className="my-4">
                             <Skeleton count={3} className="h-20"/>
