@@ -1,4 +1,4 @@
-import {GetServerSideProps} from "next";
+import next, {GetServerSideProps} from "next";
 import {getSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import {GameObj, LeagueObj} from "../../utils/types";
@@ -14,8 +14,31 @@ import {format} from "date-fns";
 
 export default function Player({league, player}: {league: LeagueObj, player: string}) {
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&player=${player}`, fetcher);
+    // earliest games come first
+    // if a is less (earlier) than b, a should come first
+    let filteredGames = []
 
-    const chartData = games ? games.map(game => ({
+    if (games) {
+        games.sort(function(a,b){
+            // Turn your strings into dates, and then subtract them
+            // to get a value that is either negative, positive, or zero.
+            return +(new Date(a.date)) - +(new Date(b.date));
+        });
+
+        for (let i = 0; i < games.length - 1; i++) {
+            let currentGameDate = new Date(games[i].date) 
+            let nextGameDate = new Date(games[i + 1].date)
+            if (currentGameDate.getFullYear() !== nextGameDate.getFullYear() ||
+                currentGameDate.getMonth() !== nextGameDate.getMonth() || 
+                currentGameDate.getDate() !== nextGameDate.getDate()) {
+                    filteredGames.push(games[i])
+                }
+        }
+        filteredGames.push(games[games.length - 1]);
+    }
+
+
+    const chartData = games ? filteredGames.map(game => ({
         rating: game.player1 === player ? game.elo1_after : game.elo2_after,
         date: new Date(game.date).getTime(),
     })) : null;
