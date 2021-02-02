@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (lastPlayer2Game.length > 0) {
         elo2before = lastPlayer2Game[0].player1 === req.body.player2
             ? lastPlayer2Game[0].elo1_after
-            : lastPlayer1Game[0].elo2_after;
+            : lastPlayer2Game[0].elo2_after;
     }
 
     const expected1 = 1 / (1 + 10 ** ((elo2before - elo1before)/400));
