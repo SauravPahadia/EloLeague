@@ -1,24 +1,24 @@
 import {GetServerSideProps} from "next";
-import {GameObj, LeagueObj, PlayerStandingObj} from "../utils/types";
+import {GameObj, LeagueObj, PlayerStandingObj} from "../../utils/types";
 import {getSession, useSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
-import ElH1 from "../components/ElH1";
-import ElButton from "../components/ElButton";
+import ElH1 from "../../components/ElH1";
+import ElButton from "../../components/ElButton";
 import React, {useEffect, useState} from "react";
-import ElModal from "../components/ElModal";
-import ElH2 from "../components/ElH2";
-import ElH3 from "../components/ElH3";
-import ElInput from "../components/ElInput";
+import ElModal from "../../components/ElModal";
+import ElH2 from "../../components/ElH2";
+import ElH3 from "../../components/ElH3";
+import ElInput from "../../components/ElInput";
 import axios, {AxiosError, AxiosResponse} from "axios";
 import {BiArrowBack} from "react-icons/bi";
 import Link from "next/link";
 import useSWR, {responseInterface} from "swr";
-import {fetcher} from "../utils/fetcher";
+import {fetcher} from "../../utils/fetcher";
 import {format} from "date-fns";
 import Skeleton from "react-loading-skeleton";
 import Select from "react-select";
 
-export default function League({league}: {league: LeagueObj}) {
+export default function LeagueIndex({league}: {league: LeagueObj}) {
     const [session, loading] = useSession();
     const isAdmin = session && (+league.user_id === +session.userId);
     const [newGameOpen, setNewGameOpen] = useState<boolean>(false);
@@ -31,10 +31,11 @@ export default function League({league}: {league: LeagueObj}) {
     const [newPlayerOpen, setNewPlayerOpen] = useState<boolean>(false);
     const [newPlayerLoading, setNewPlayerLoading] = useState<boolean>(false);
     const [newPlayerName, setNewPlayerName] = useState<string>("");
+    const [gameIteration, setGameIteration] = useState<number>(0);
     const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
     const [unauthMessage, setUnauthMessage] = useState<string>("");
-    const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}`, fetcher);
+    const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&iter=${gameIteration}`, fetcher);
     const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
     function onSubmitGame() {
@@ -49,7 +50,8 @@ export default function League({league}: {league: LeagueObj}) {
             leagueId: league.id,
         }).then((res: AxiosResponse) => {
             setNewGameLoading(false);
-                onCancelSubmitGame();
+            setGameIteration(gameIteration + 1);
+            onCancelSubmitGame();
         }).catch((e: AxiosError) => {
             setNewGameLoading(false);
             if (e.response.status === 403) {
@@ -162,17 +164,21 @@ export default function League({league}: {league: LeagueObj}) {
                             <th className={thClass}>Wins</th>
                             <th className={thClass}>Losses</th>
                         </thead>
-                        {playerRatings ? playerRatings.map((playerObj, i) => (
-                            <tr>
-                                <td className={tdClass}>{i + 1}</td>
-                                <td className={tdClass}>{playerObj.name}</td>
-                                <td className={tdClass}>{Math.round(playerObj.rating)}</td>
-                                <td className={tdClass}>{playerObj.wins || 0}</td>
-                                <td className={tdClass}>{playerObj.losses || 0}</td>
-                            </tr>
-                        )) : (
-                            <Skeleton count={5} className="w-full"/>
-                        )}
+                        <tbody>
+                            {playerRatings ? playerRatings.map((playerObj, i) => (
+                                <tr>
+                                    {[i + 1, playerObj.name, Math.round(playerObj.rating), playerObj.wins || 0, playerObj.losses || 0].map(stat => (
+                                        <td className={tdClass}>
+                                            <Link href={`/${league.url_name}/${playerObj.name}`}><a>
+                                                {stat}
+                                            </a></Link>
+                                        </td>
+                                    ))}
+                                </tr>
+                            )) : (
+                                <Skeleton count={5} className="w-full"/>
+                            )}
+                        </tbody>
                     </table>
                 </div>
                 <div className="md:w-1/2 md:mx-4">

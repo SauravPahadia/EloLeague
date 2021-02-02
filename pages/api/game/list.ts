@@ -11,11 +11,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // fetch games
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-    const {data: games, error: _} = await supabase
+
+    let query = supabase
         .from<GameObj>("Games")
         .select("*")
-        .eq("league_id", req.query.leagueId)
-        .order("date", {ascending: false});
+        .eq("league_id", req.query.leagueId);
+
+    if (req.query.player) query = query.or(`player1.eq.${req.query.player},player2.eq.${req.query.player}`);
+
+    const {data: games, error: _} = await query.order("date", {ascending: false});
 
     return res.status(200).json(games);
 }
