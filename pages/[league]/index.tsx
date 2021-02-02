@@ -136,9 +136,10 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
 
     return (
         <div className="max-w-4xl mx-auto px-4">
-            
-            <textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>
-            <button onClick={csvImport}> CSV IMPORT </button>
+
+            {/*<textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>*/}
+            {/*<button onClick={csvImport}> CSV IMPORT </button>*/}
+
             {isAdmin && (
                 <Link href="/dashboard">
                     <a className="flex items-center mt-8">
