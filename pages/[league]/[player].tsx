@@ -65,7 +65,7 @@ export default function Player({league, player}: {league: LeagueObj, player: str
             <Link href={`/${league.url_name}`}>
                 <a className="flex items-center mt-8">
                     <BiArrowBack/>
-                    <span className="ml-4">Back to league</span>
+                    <span className="ml-4">Back to {league.name}</span>
                 </a>
             </Link>
             <ElH1>Player: {player}</ElH1>

@@ -1,5 +1,5 @@
 import {GetServerSideProps} from "next";
-import {GameObj, LeagueObj, PlayerStandingObj} from "../../utils/types";
+import {GameObj, LeagueObj, PlayerStandingObj, SessionObj} from "../../utils/types";
 import {getSession, useSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import ElH1 from "../../components/ElH1";
@@ -18,8 +18,7 @@ import {format} from "date-fns";
 import Skeleton from "react-loading-skeleton";
 import Select from "react-select";
 
-export default function LeagueIndex({league}: {league: LeagueObj}) {
-    const [session, loading] = useSession();
+export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const isAdmin = session && (+league.user_id === +session.userId);
     const [newGameOpen, setNewGameOpen] = useState<boolean>(false);
     const [player1, setPlayer1] = useState<string>("");
@@ -148,8 +147,8 @@ export default function LeagueIndex({league}: {league: LeagueObj}) {
                     </a>
                 </Link>
             )}
-            <ElH1>{league.name}</ElH1>
-            <p className="text-lg">{league.description || (isAdmin ? <span className="opacity-50">Add a description</span> : "")}</p>
+            <ElH1>League: {league.name}</ElH1>
+            <p className="text-lg">{league.description || ""}</p>
             {isAdmin ? (
                 <div className="border p-4 my-4 flex items-center">
                     <BiInfoCircle className="flex-shrink-0"/>
@@ -360,5 +359,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let returnLeague = {...thisLeague[0]};
 
     if (!session || returnLeague.user_id !== session.userId) delete returnLeague.code;
-    return {props: {league: thisLeague[0]}};
+    return {props: {league: thisLeague[0], session: session}};
 };
