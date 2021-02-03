@@ -9,7 +9,10 @@ export default function Navbar() {
         <div className="bg-black w-full">
             <div className="max-w-4xl mx-auto px-4 h-16 flex items-center sticky top-0 text-white">
                 <Link href="/">
-                    <a className="font-bold text-xl">EloLeague</a>
+                    <a className="font-bold text-xl flex items-center">
+                        <img src="/logo.svg" alt="EloLeague logo" className="w-6 h-6 mr-4" style={{filter: "invert(100%)"}}/>
+                        <span>EloLeague</span>
+                    </a>
                 </Link>
                 <div className="ml-auto flex">
                     {(loading || !session) ? (
