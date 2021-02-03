@@ -24,18 +24,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
 
         let email;
+        let subtotal;
+        let tier;
         const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
         switch (event.type) {
             case "checkout.session.completed":
                 email = event.data.object.customer_details.email;
-                const subtotal = event.data.object.amount_subtotal;
-                const tier = subtotal === 1000 ? "individual" : "club";
+                subtotal = event.data.object.amount_subtotal;
+                tier = subtotal === 1000 ? "individual" : "club";
 
                 const {data: userData, error: userError} = await supabase
                     .from<UserObj>("Users")
                     .update({ tier: tier, trial_used: true })
                     .eq("email", email);
+
+                break;
+            case "customer.subscription.updated":
+                const customerId = event.data.object.customer;
+                const customerObj = await stripe.customers.retrieve(customerId);
+
+                subtotal = event.data.object.items.data[0].plan.amount;
+                tier = subtotal === 1000 ? "individual" : "club";
+
+                const {data: userUpdateData, error: userUpdateError} = await supabase
+                    .from<UserObj>("Users")
+                    .update({ tier: tier })
+                    .eq("email", customerObj.email);
 
                 break;
             case "customer.subscription.deleted":
