@@ -14,6 +14,7 @@ import {LeagueObj, SessionObj} from "../utils/types";
 import ElH1 from "../components/ElH1";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
+import ElInfoBox from "../components/ElInfoBox";
 
 export default function Dashboard(props: {session: SessionObj}) {
     const router = useRouter();
@@ -143,10 +144,12 @@ export default function Dashboard(props: {session: SessionObj}) {
                 )}
             </ElModal>
             <hr className="my-6"/>
-            <div className="flex items-center">
-                <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? leaguesLeft : "unlimited"} league{(leaguesLeft !== 1) ? "s" : ""} left.</p>
-                <ElButton className="ml-auto" href={props.session.tier === "free" ? "/pricing" : null}>{props.session.tier === "free" ? "Upgrade" : "Billing"}</ElButton>
-            </div>
+            <ElInfoBox>
+                <div className="flex items-center">
+                    <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? leaguesLeft : "unlimited"} league{(leaguesLeft !== 1) ? "s" : ""} left.</p>
+                    <ElButton className="ml-auto" href={props.session.tier === "free" ? "/pricing" : null}>{props.session.tier === "free" ? "Upgrade" : "Billing"}</ElButton>
+                </div>
+            </ElInfoBox>
         </div>
     )
 }

@@ -18,6 +18,7 @@ import ElHeadToHeadsTable from "../../components/ElHeadToHeadsTable";
 import {sampleChartData, sampleHeadToHeads} from "../../utils/sampleData";
 import ElButton from "../../components/ElButton";
 import ElFooterCTA from "../../components/ElFooterCTA";
+import ElInfoBox from "../../components/ElInfoBox";
 
 export default function Player({league, leagueTier, player, session}: {
     league: LeagueObj,
@@ -81,7 +82,7 @@ export default function Player({league, leagueTier, player, session}: {
             <ElH1>Player: {player}</ElH1>
             <hr className="my-6"/>
             {leagueTier === "free" ? (
-                <div className="px-4 py-8 border bg-gray-100">
+                <ElInfoBox>
                     <ElH2>Upgrade for player profiles</ElH2>
                     {isAdmin ? (
                         <div className="flex items-center">
@@ -106,7 +107,7 @@ export default function Player({league, leagueTier, player, session}: {
                             </div>
                         </div>
                     </div>
-                </div>
+                </ElInfoBox>
             ) : (
                 <div className="md:flex -mx-4">
                     <div className="md:w-1/2 mx-4 pb-16">

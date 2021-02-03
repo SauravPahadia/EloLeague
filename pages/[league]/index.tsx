@@ -18,6 +18,7 @@ import {format} from "date-fns";
 import Skeleton from "react-loading-skeleton";
 import Select from "react-select";
 import ElFooterCTA from "../../components/ElFooterCTA";
+import ElInfoBox from "../../components/ElInfoBox";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const isAdmin = session && (+league.user_id === +session.userId);
@@ -151,13 +152,14 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             <ElH1>League: {league.name}</ElH1>
             <p className="text-lg">{league.description || ""}</p>
             {isAdmin ? (
-                <div className="border p-4 my-4 flex items-center bg-gray-100">
-                    <BiInfoCircle className="flex-shrink-0"/>
-                    <p className="text-lg ml-4">
-                        You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
-                    </p>
-                </div>
-
+                <ElInfoBox className="my-4">
+                    <div className="flex items-center">
+                        <BiInfoCircle className="flex-shrink-0"/>
+                        <p className="text-lg ml-4">
+                            You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
+                        </p>
+                    </div>
+                </ElInfoBox>
             ) : (
                 <p className="text-lg">Ask the league admin for the access code to log games or add new players.</p>
             )}
