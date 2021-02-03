@@ -88,6 +88,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         }).then(res => {
             // change dummy param to trigger standings re-query
             setPlayerIteration(playerIteration + 1);
+            setNewPlayerLoading(false);
             onCancelSubmitPlayer();
         }).catch((e: AxiosError) => {
             setNewPlayerLoading(false);
