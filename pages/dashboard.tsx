@@ -62,6 +62,8 @@ export default function Dashboard(props: {session: SessionObj}) {
         setUrlNameNotUnique(false);
     }, [urlName]);
 
+    const leaguesLeft = Math.max(leagues ? (props.session.numAllowedLeagues - leagues.length) : 0, 0);
+
     return (
         <div className="max-w-4xl mx-auto px-4">
             <div className="flex">
@@ -142,7 +144,7 @@ export default function Dashboard(props: {session: SessionObj}) {
             </ElModal>
             <hr className="my-6"/>
             <div className="flex items-center">
-                <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? Math.max(leagues.length - props.session.numAllowedLeagues, 0) : "unlimited"} leagues left.</p>
+                <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? leaguesLeft : "unlimited"} league{(leaguesLeft !== 1) ? "s" : ""} left.</p>
                 <ElButton className="ml-auto" href={props.session.tier === "free" ? "/pricing" : null}>{props.session.tier === "free" ? "Upgrade" : "Billing"}</ElButton>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import next, {GetServerSideProps} from "next";
 import {getSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
-import {GameObj, LeagueObj} from "../../utils/types";
+import {GameObj, LeagueObj, SessionObj, UserObj} from "../../utils/types";
 import useSWR, {responseInterface} from "swr";
 import {fetcher} from "../../utils/fetcher";
 import React from "react";
@@ -11,8 +11,20 @@ import ElH1 from "../../components/ElH1";
 import ElH3 from "../../components/ElH3";
 import {Line, LineChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis} from "recharts";
 import {format} from "date-fns";
+import ElH2 from "../../components/ElH2";
+import Skeleton from "react-loading-skeleton";
+import ElRatingGraph from "../../components/ElRatingGraph";
+import ElHeadToHeadsTable from "../../components/ElHeadToHeadsTable";
+import {sampleChartData, sampleHeadToHeads} from "../../utils/sampleData";
+import ElButton from "../../components/ElButton";
 
-export default function Player({league, player}: {league: LeagueObj, player: string}) {
+export default function Player({league, leagueTier, player, session}: {
+    league: LeagueObj,
+    leagueTier: "free" | "individual" | "club",
+    player: string,
+    session: SessionObj,
+}) {
+    const isAdmin = session && (+league.user_id === +session.userId);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&player=${player}`, fetcher);
     // earliest games come first
     // if a is less (earlier) than b, a should come first
@@ -57,11 +69,8 @@ export default function Player({league, player}: {league: LeagueObj, player: str
         }
     });
 
-    const thClass = "font-normal pb-2 pr-2";
-    const tdClass = "py-4 border-b";
-
     return (
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pb-12">
             <Link href={`/${league.url_name}`}>
                 <a className="flex items-center mt-8">
                     <BiArrowBack/>
@@ -70,73 +79,56 @@ export default function Player({league, player}: {league: LeagueObj, player: str
             </Link>
             <ElH1>Player: {player}</ElH1>
             <hr className="my-6"/>
-            <div className="md:flex -mx-4">
-                <div className="md:w-1/2 mx-4 pb-16">
-                    <ElH3>Rating history</ElH3>
-                    {chartData && (
-                        <ResponsiveContainer width="100%" height={400} className="my-8">
-                            <LineChart data={chartData}>
-                                <XAxis
-                                    dataKey="date"
-                                    domain={["auto", "auto"]}
-                                    name="Date"
-                                    tickFormatter={(unixTime) => format(new Date(unixTime), "M/d/yyyy")}
-                                    type="number"
-                                    style={{opacity: 0.5}}
-                                />
-                                <YAxis
-                                    dataKey="rating"
-                                    name="Rating"
-                                    tickFormatter={rating => Math.round(+rating).toString()}
-                                    domain={[chartData ? Math.min(...chartData.map(d => d.rating)) - 50 : 0, chartData ? Math.max(...chartData.map(d => d.rating)) + 50 : 2000]}
-                                    style={{opacity: 0.5}}
-                                />
-                                <Line type="monotone" dataKey="rating" stroke="#222" activeDot={{ r: 8 }} isAnimationActive={false}/>
-                                <Tooltip content={({active, payload, label}) => (
-                                    (active && payload && label) ? (
-                                        <>
-                                            <p>Date: {format(new Date(+label), "M/d/yyyy 'at' h:mm a")}</p>
-                                            <p>Rating: {Math.round(+payload[0].value)}</p>
-                                        </>
-                                    ) : null
-                                )}/>
-                            </LineChart>
-                        </ResponsiveContainer>
+            {leagueTier === "free" ? (
+                <div className="px-4 py-8 border bg-gray-100">
+                    <ElH2>Upgrade for player profiles</ElH2>
+                    {isAdmin ? (
+                        <div className="flex items-center">
+                            <p className="mt-4 text-lg">Upgrade to a <b>club tier account</b> to enable player rating histories, head to head records, and more.</p>
+                            <ElButton className="ml-4 flex-shrink-0">Start free trial</ElButton>
+                        </div>
+                    ) : (
+                        <p className="mt-4 text-lg">Ask your league admin to upgrade to a <b>club tier account</b> to enable player rating histories, head to head records, and more.</p>
                     )}
-                    <style dangerouslySetInnerHTML={{__html: `
-.recharts-xAxis .recharts-text.recharts-cartesian-axis-tick-value {
-    transform: translateY(1rem);
-}
-
-.recharts-yAxis .recharts-text.recharts-cartesian-axis-tick-value {
-    transform: translateX(-0.5rem);
-}
-                    `}}/>
+                    <hr className="my-4"/>
+                    <div className="md:flex -mx-4">
+                        <div className="md:w-1/2 mx-4 pb-16 md:pb-0">
+                            <ElH3>Rating history</ElH3>
+                            <div className="mt-4 pr-4 border shadow-md bg-white">
+                                <ElRatingGraph chartData={sampleChartData}/>
+                            </div>
+                        </div>
+                        <div className="md:w-1/2 mx-4 pb-16 md:pb-0">
+                            <ElH3>Head to heads</ElH3>
+                            <div className="mt-4 px-4 mb-2 border shadow-md bg-white">
+                                <ElHeadToHeadsTable headToHeads={sampleHeadToHeads} player="Han"/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="md:w-1/2 mx-4 pb-16">
-                    <ElH3>Head to heads</ElH3>
-                    <table className="w-full mt-6">
-                        <thead className="text-gray-400 text-left border-b-2">
-                            <th className={thClass}>Opponent</th>
-                            <th className={thClass}>{player}'s wins vs.</th>
-                            <th className={thClass}>{player}'s losses vs.</th>
-                        </thead>
-                        <tbody>
-                            {headToHeads && headToHeads.map(opponentObj => (
-                                <tr>
-                                    {[opponentObj.name, opponentObj.wins || 0, opponentObj.losses || 0].map(stat => (
-                                        <td className={tdClass}>
-                                            <Link href={`/${league.url_name}/${opponentObj.name}`}><a>
-                                                {stat}
-                                            </a></Link>
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            ) : (
+                <div className="md:flex -mx-4">
+                    <div className="md:w-1/2 mx-4 pb-16">
+                        <ElH3>Rating history</ElH3>
+                        {chartData ? (
+                            <ElRatingGraph chartData={chartData}/>
+                        ) : (
+                            <div className="my-4">
+                                <Skeleton count={1} style={{height: 400}}/>
+                            </div>
+                        )}
+                    </div>
+                    <div className="md:w-1/2 mx-4 pb-16">
+                        <ElH3>Head to heads</ElH3>
+                        <ElHeadToHeadsTable headToHeads={headToHeads} player={player} leagueUrl={league.url_name}/>
+                        {!headToHeads && (
+                            <div className="my-4">
+                                <Skeleton count={3} className="h-14"/>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     )
 
@@ -155,7 +147,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-    const {data: thisLeague, error: _} = await supabase
+    const {data: thisLeague, error: thisLeagueError} = await supabase
         .from<LeagueObj>("Leagues")
         .select("*")
         .eq("url_name", urlLeague);
@@ -167,5 +159,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     let returnLeague = {...thisLeague[0]};
     if (!session || returnLeague.user_id !== session.userId) delete returnLeague.code;
 
-    return {props: {league: thisLeague[0], player: urlPlayer}};
+    const {data: thisLeagueTier, error: thisLeagueTierError} = await supabase
+        .from<UserObj>("Users")
+        .select("tier")
+        .eq("id", thisLeague[0].user_id);
+
+    return {props: {league: thisLeague[0], leagueTier: thisLeagueTier[0].tier, player: urlPlayer, session: session}};
 };
