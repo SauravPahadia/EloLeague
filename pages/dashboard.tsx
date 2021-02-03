@@ -90,7 +90,12 @@ export default function Dashboard(props: {session: SessionObj}) {
                     </ElButton>
                 </div>
             </div>
-            <hr className="my-4"/>
+            {router.query.upgrade === "true" && props.session.tier === "free" && (
+                <ElInfoBox className="my-6">
+                    <p className="text-lg">Just upgraded your plan? It may take some time for your payment to be processed, and your account updated. Reload this page in a few minutes, or contact us at hello@eloleague.com if the problem persists.</p>
+                </ElInfoBox>
+            )}
+            <hr className="my-6"/>
             {leagues ? leagues.map(league => (
                 <Link href={`/${league.url_name}`}>
                     <a className="w-full p-4 shadow-md my-4 block">
