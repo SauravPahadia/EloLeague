@@ -90,9 +90,15 @@ export default function Dashboard(props: {session: SessionObj}) {
                     </ElButton>
                 </div>
             </div>
-            {router.query.upgrade === "true" && props.session.tier === "free" && (
+            {router.query.upgrade === "true" && (
                 <ElInfoBox className="my-6">
-                    <p className="text-lg">Just upgraded your plan? It may take some time for your payment to be processed, and your account updated. Reload this page in a few minutes, or contact us at hello@eloleague.com if the problem persists.</p>
+                    <p className="text-lg">
+                        {props.session.tier === "free" ? (
+                            "Just upgraded your plan? It may take some time for your payment to be processed, and your account updated. Reload this page in a few minutes, or contact us at hello@eloleague.com if the problem persists."
+                        ) : (
+                            <span>Your account has been upgraded to a{props.session.tier === "individual" ? "n" : ""} <strong>{props.session.tier} plan</strong>.</span>
+                        )}
+                    </p>
                 </ElInfoBox>
             )}
             <hr className="my-6"/>

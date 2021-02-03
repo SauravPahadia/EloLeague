@@ -26,6 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let email;
         let subtotal;
         let tier;
+        let customerId;
+        let customerObj;
         const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
         switch (event.type) {
@@ -41,11 +43,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 break;
             case "customer.subscription.updated":
-                const customerId = event.data.object.customer;
-                const customerObj = await stripe.customers.retrieve(customerId);
+                customerId = event.data.object.customer;
+                customerObj = await stripe.customers.retrieve(customerId);
 
                 subtotal = event.data.object.items.data[0].plan.amount;
-                tier = subtotal === 1000 ? "individual" : "club";
+                tier = event.data.object.canceled_at ? "free" : (subtotal === 1000 ? "individual" : "club");
+
+                console.log(event.data.object, subtotal, tier);
 
                 const {data: userUpdateData, error: userUpdateError} = await supabase
                     .from<UserObj>("Users")
@@ -54,11 +58,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 break;
             case "customer.subscription.deleted":
-                email = event.data.object.customer_details.email;
+                customerId = event.data.object.customer;
+                customerObj = await stripe.customers.retrieve(customerId);
+
                 const {data: userDeleteData, error: userDeleteDataError} = await supabase
                     .from<UserObj>("Users")
                     .update({ tier: "free" })
-                    .eq("email", email);
+                    .eq("email", customerObj.email);
 
                 break;
         }
