@@ -17,6 +17,7 @@ import ElRatingGraph from "../../components/ElRatingGraph";
 import ElHeadToHeadsTable from "../../components/ElHeadToHeadsTable";
 import {sampleChartData, sampleHeadToHeads} from "../../utils/sampleData";
 import ElButton from "../../components/ElButton";
+import ElFooterCTA from "../../components/ElFooterCTA";
 
 export default function Player({league, leagueTier, player, session}: {
     league: LeagueObj,
@@ -129,6 +130,7 @@ export default function Player({league, leagueTier, player, session}: {
                     </div>
                 </div>
             )}
+            <ElFooterCTA noDisplay={!!(isAdmin || session)}/>
         </div>
     )
 

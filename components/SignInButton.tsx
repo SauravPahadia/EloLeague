@@ -6,7 +6,7 @@ export default function SignInButton() {
     return (
         <button
             className="bg-black text-white"
-            onClick={() => signIn("google")}
+            onClick={() => signIn("google", {callbackUrl: process.env.NEXT_PUBLIC_URL + "/dashboard"})}
         >
             <div className="flex items-center">
                 <FaGoogle/><span className="ml-2">Sign in</span>

@@ -17,6 +17,7 @@ import {fetcher} from "../../utils/fetcher";
 import {format} from "date-fns";
 import Skeleton from "react-loading-skeleton";
 import Select from "react-select";
+import ElFooterCTA from "../../components/ElFooterCTA";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const isAdmin = session && (+league.user_id === +session.userId);
@@ -134,7 +135,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
     const tdClass = "py-4 border-b";
 
     return (
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pb-12">
 
             {/*<textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>*/}
             {/*<button onClick={csvImport}> CSV IMPORT </button>*/}
@@ -341,6 +342,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                     )}
                 </div>
             </div>
+            <ElFooterCTA noDisplay={!!(isAdmin || session)}/>
         </div>
     );
 }
