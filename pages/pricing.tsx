@@ -2,9 +2,10 @@ import {signIn, useSession} from "next-auth/client";
 import ElH1 from "../components/ElH1";
 import ElH2 from "../components/ElH2";
 import ElButton from "../components/ElButton";
-import {useState} from "react";
+import React, {useState} from "react";
 import axios from "axios";
 import {loadStripe} from "@stripe/stripe-js/pure";
+import ElNextSeo from "../components/ElNextSeo";
 
 export default function Pricing() {
     const [session, loading] = useSession();
@@ -38,6 +39,7 @@ export default function Pricing() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-4">
+            <ElNextSeo title="Pricing"/>
             <ElH1>{session ? "Upgrade" : "Pricing"}</ElH1>
             <hr className="my-6"/>
             <div className="md:flex -mx-4">

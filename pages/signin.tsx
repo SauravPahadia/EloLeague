@@ -2,10 +2,12 @@ import React from 'react';
 import {GetServerSideProps} from "next";
 import {getSession} from "next-auth/client";
 import SignInButton from "../components/SignInButton";
+import ElNextSeo from "../components/ElNextSeo";
 
 export default function SignIn() {
     return (
         <div className="max-w-sm mx-auto px-4">
+            <ElNextSeo title="Sign in"/>
             <SignInButton/>
         </div>
     );

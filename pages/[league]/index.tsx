@@ -1,10 +1,10 @@
 import {GetServerSideProps} from "next";
 import {GameObj, LeagueObj, PlayerStandingObj, SessionObj} from "../../utils/types";
-import {getSession, useSession} from "next-auth/client";
+import {getSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import ElH1 from "../../components/ElH1";
 import ElButton from "../../components/ElButton";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import ElModal from "../../components/ElModal";
 import ElH2 from "../../components/ElH2";
 import ElH3 from "../../components/ElH3";
@@ -19,6 +19,7 @@ import Skeleton from "react-loading-skeleton";
 import Select from "react-select";
 import ElFooterCTA from "../../components/ElFooterCTA";
 import ElInfoBox from "../../components/ElInfoBox";
+import ElNextSeo from "../../components/ElNextSeo";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const isAdmin = session && (+league.user_id === +session.userId);
@@ -137,6 +138,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
 
     return (
         <div className="max-w-4xl mx-auto px-4 pb-12">
+            <ElNextSeo title={"League: " + league.name}/>
 
             {/*<textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>*/}
             {/*<button onClick={csvImport}> CSV IMPORT </button>*/}

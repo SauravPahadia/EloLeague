@@ -15,6 +15,7 @@ import ElH1 from "../components/ElH1";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import ElInfoBox from "../components/ElInfoBox";
+import ElNextSeo from "../components/ElNextSeo";
 
 export default function Dashboard(props: {session: SessionObj}) {
     const router = useRouter();
@@ -79,6 +80,7 @@ export default function Dashboard(props: {session: SessionObj}) {
 
     return (
         <div className="max-w-4xl mx-auto px-4">
+            <ElNextSeo title="Your leagues"/>
             <div className="flex">
                 <div>
                     <ElH1>Your leagues</ElH1>

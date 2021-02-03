@@ -1,4 +1,4 @@
-import next, {GetServerSideProps} from "next";
+import {GetServerSideProps} from "next";
 import {getSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
 import {GameObj, LeagueObj, SessionObj, UserObj} from "../../utils/types";
@@ -9,8 +9,6 @@ import Link from "next/link";
 import {BiArrowBack} from "react-icons/bi";
 import ElH1 from "../../components/ElH1";
 import ElH3 from "../../components/ElH3";
-import {Line, LineChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis} from "recharts";
-import {format} from "date-fns";
 import ElH2 from "../../components/ElH2";
 import Skeleton from "react-loading-skeleton";
 import ElRatingGraph from "../../components/ElRatingGraph";
@@ -19,6 +17,7 @@ import {sampleChartData, sampleHeadToHeads} from "../../utils/sampleData";
 import ElButton from "../../components/ElButton";
 import ElFooterCTA from "../../components/ElFooterCTA";
 import ElInfoBox from "../../components/ElInfoBox";
+import ElNextSeo from "../../components/ElNextSeo";
 
 export default function Player({league, leagueTier, player, session}: {
     league: LeagueObj,
@@ -73,6 +72,7 @@ export default function Player({league, leagueTier, player, session}: {
 
     return (
         <div className="max-w-4xl mx-auto px-4 pb-12">
+            <ElNextSeo title={"Player: " + player}/>
             <Link href={`/${league.url_name}`}>
                 <a className="flex items-center mt-8">
                     <BiArrowBack/>

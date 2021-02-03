@@ -1,10 +1,20 @@
 import {useSession} from "next-auth/client";
+import Head from "next/head";
+import React from "react";
+import {NextSeo} from "next-seo";
+import ElNextSeo from "../components/ElNextSeo";
 
 export default function Home() {
     const [session, loading] = useSession();
 
     return (
         <div className="bg-black w-full text-white">
+            <Head>
+                <NextSeo
+                    title="EloLeague | Log games and track player ratings for your casual league or club"
+                    description="EloLeague is the easiest platform for tracking games and player ratings for your league, club, or house."
+                />
+            </Head>
             <div className="max-w-4xl mx-auto px-4 py-16">
                 <div className="text-center">
                     <h1 className="text-6xl font-semibold el-font-display uppercase mb-4">Know who's actually better</h1>
