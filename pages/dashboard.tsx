@@ -25,6 +25,7 @@ export default function Dashboard(props: {session: SessionObj}) {
     const [newLeagueLoading, setNewLeagueLoading] = useState<boolean>(false);
     const [urlNameError, setUrlNameError] = useState<boolean>(false);
     const [urlNameNotUnique, setUrlNameNotUnique] = useState<boolean>(false);
+    const [isPortalLoading, setIsPortalLoading] = useState<boolean>(false);
 
     const {data: leagues, error: _}: responseInterface<LeagueObj[], any> = useSWR(`/api/league/list?userId=${props.session.userId}`, fetcher);
 
@@ -52,6 +53,17 @@ export default function Dashboard(props: {session: SessionObj}) {
         setUrlName("");
         setDescription("");
         setNewLeagueOpen(false);
+    }
+
+    function redirectToBillingPortal() {
+        setIsPortalLoading(true);
+
+        axios.post("/api/billing/create-portal-session").then(res => {
+            router.push(res.data.url);
+        }).catch(e => {
+            setIsPortalLoading(false);
+            console.log(e);
+        });
     }
 
     useEffect(() => {
@@ -147,7 +159,14 @@ export default function Dashboard(props: {session: SessionObj}) {
             <ElInfoBox>
                 <div className="flex items-center">
                     <p className="text-lg">You are on a <b>{props.session.tier}</b> plan, with {props.session.tier === "free" ? leaguesLeft : "unlimited"} league{(leaguesLeft !== 1) ? "s" : ""} left.</p>
-                    <ElButton className="ml-auto" href={props.session.tier === "free" ? "/pricing" : null}>{props.session.tier === "free" ? "Upgrade" : "Billing"}</ElButton>
+                    <ElButton
+                        className="ml-auto"
+                        href={props.session.tier === "free" ? "/pricing" : null}
+                        onClick={props.session.tier === "free" ? null : redirectToBillingPortal}
+                        isLoading={isPortalLoading}
+                    >
+                        {props.session.tier === "free" ? "Upgrade" : "Billing"}
+                    </ElButton>
                 </div>
             </ElInfoBox>
         </div>
