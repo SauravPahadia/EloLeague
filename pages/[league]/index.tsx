@@ -151,7 +151,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             <ElH1>League: {league.name}</ElH1>
             <p className="text-lg">{league.description || ""}</p>
             {isAdmin ? (
-                <div className="border p-4 my-4 flex items-center">
+                <div className="border p-4 my-4 flex items-center bg-gray-100">
                     <BiInfoCircle className="flex-shrink-0"/>
                     <p className="text-lg ml-4">
                         You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
