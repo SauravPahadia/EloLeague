@@ -4,6 +4,7 @@ export interface SessionObj extends SessionBase {
     userId: number,
     tier: "free" | "individual" | "club",
     numAllowedLeagues: number,
+    trialUsed: boolean,
 }
 
 export interface UserObj {
@@ -13,6 +14,7 @@ export interface UserObj {
     leagues: number[],
     tier: "free" | "individual" | "club",
     num_leagues_allowed: number,
+    trial_used: boolean,
 }
 
 export interface LeagueObj {

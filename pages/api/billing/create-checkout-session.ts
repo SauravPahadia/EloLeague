@@ -37,6 +37,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         checkoutSessionObj["customer_email"] = session.user.email;
     }
 
+    if (!session.trialUsed) {
+        checkoutSessionObj["subscription_data"] = {trial_end: Math.round(Date.now() / 1000) + 14 * 24 * 60 * 60};
+    }
+
     try {
         const checkoutSession = await stripe.checkout.sessions.create(checkoutSessionObj);
         res.status(200).json({sessionId: checkoutSession.id});

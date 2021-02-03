@@ -40,6 +40,7 @@ const options: InitOptions = {
                 userId: userRecord.id,
                 tier: userRecord.tier,
                 numAllowedLeagues: userRecord.num_leagues_allowed,
+                trialUsed: userRecord.trial_used,
                 ...session,
             };
 
