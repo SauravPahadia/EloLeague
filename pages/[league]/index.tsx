@@ -254,7 +254,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                                             onChange={selected => {
                                                 setPlayer1(selected.value);
                                             }}
-                                            options={league.players.map(player => ({label: player, value: player}))}
+                                            options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})): []}
                                             filterOption={label => label !== player2}
                                             className="w-full my-2"
                                         />
@@ -271,7 +271,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                                         <Select
                                             value={{label: player2, value: player2}}
                                             onChange={selected => setPlayer2(selected.value)}
-                                            options={league.players.map(player => ({label: player, value: player}))}
+                                            options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})) : []}
                                             filterOption={({label}) => label !== player1}
                                             className="w-full my-2"
                                         />
