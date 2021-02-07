@@ -12,8 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!req.body.gameId) return res.status(406).json({message: "Missing gameId field"});
 
     // check auth
-    // const session = await getSession({req});
-    // if (!session && !req.body.code) return res.status(403).json({message: "You must have an access code or be logged in to create a league."});
+    const session = await getSession({req});
+    if (!session && !req.body.code) return res.status(403).json({message: "You must have an access code or be logged in to create a league."});
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
     const {data: leagues, error: leagueError} = await supabase

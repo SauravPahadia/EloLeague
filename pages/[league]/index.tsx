@@ -38,6 +38,9 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
     const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
     const [unauthMessage, setUnauthMessage] = useState<string>("");
+    const [deleteGameOpen, setDeleteGameOpen] = useState<boolean>(false);
+    const [deleteGameLoading, setDeleteGameLoading] = useState<boolean>(false);
+    const [selectedGame, setSelectedGame] = useState<number>(null);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&iter=${gameIteration}`, fetcher);
     const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
@@ -132,6 +135,32 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         }).catch((e: AxiosError) => {
 
         });
+    }
+
+    function onDeleteGame() {
+        setDeleteGameLoading(true);
+
+        axios.delete("/api/game/delete", {
+            data: {
+                code: code || "",
+                leagueId: league.id,
+                gameId: selectedGame,
+            }
+        }).then(() => {
+            setDeleteGameLoading(false);
+            onDeleteCancel();
+            setGameIteration(gameIteration + 1);
+            setPlayerIteration(playerIteration + 1);
+        }).catch(e => {
+            console.log(e);
+            setDeleteGameLoading(false);
+        });
+    }
+
+    function onDeleteCancel() {
+        setDeleteGameOpen(false);
+        setCode("");
+        setSelectedGame(null);
     }
 
     const thClass = "font-normal pb-2";
@@ -309,7 +338,14 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                                     <p className="border-b-2 pb-2 mt-6 text-gray-400">{format(new Date(game.date), "EEEE, MMMM d, yyyy")}</p>
                                 )}
                                 <div className="py-4 border-b">
-                                    <p className="text-sm opacity-50 text-center">{format(new Date(game.date), "h:mm a")}</p>
+                                    <p className="text-sm opacity-50 text-center">
+                                        {format(new Date(game.date), "h:mm a")}
+                                        <span> | </span>
+                                        <button className="underline" onClick={() => {
+                                            setSelectedGame(game.id);
+                                            setDeleteGameOpen(true);
+                                        }}>Delete</button>
+                                    </p>
                                     <div className="flex items-center">
                                         <div className="w-1/3">
                                             <Link href={`/${league.url_name}/${game.player1}`}>
@@ -346,6 +382,16 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                         </div>
                     )}
                 </div>
+                <ElModal isOpen={deleteGameOpen} closeModal={onDeleteCancel}>
+                    <ElH2>Delete game</ElH2>
+                    <p className="my-6">Are you sure you want to delete this game?</p>
+                    <ElButton onClick={onDeleteGame} isLoading={deleteGameLoading}>
+                        Delete
+                    </ElButton>
+                    <ElButton text={true} onClick={onDeleteCancel} disabled={deleteGameLoading}>
+                        Cancel
+                    </ElButton>
+                </ElModal>
             </div>
             <ElFooterCTA noDisplay={!!(isAdmin || session)}/>
         </div>
