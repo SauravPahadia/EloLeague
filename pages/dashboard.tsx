@@ -161,8 +161,8 @@ export default function Dashboard(props: {session: SessionObj}) {
                     </>
                 ) : (
                     <>
-                        <p>Upgrade to an Individual or Club plan to create more leagues.</p>
-                        <ElButton className="mt-4">Start free trial</ElButton>
+                        <p>Upgrade to an <b>Individual</b> or <b>Club</b> plan to create more leagues.</p>
+                        <ElButton className="mt-4" href="/pricing">Start free trial</ElButton>
                     </>
                 )}
             </ElModal>
