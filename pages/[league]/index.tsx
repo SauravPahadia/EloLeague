@@ -191,6 +191,8 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         setDeleteGameOpen(false);
         setCode("");
         setSelectedGame(null);
+        setUnauth(false);
+        setUnauthMessage("");
     }
 
     function onCancelDeleteLeague() {
