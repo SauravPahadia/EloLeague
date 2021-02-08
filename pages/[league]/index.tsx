@@ -20,6 +20,7 @@ import Select from "react-select";
 import ElFooterCTA from "../../components/ElFooterCTA";
 import ElInfoBox from "../../components/ElInfoBox";
 import ElNextSeo from "../../components/ElNextSeo";
+import ElTab from "../../components/ElTab";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const isAdmin = session && (+league.user_id === +session.userId);
@@ -41,32 +42,77 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
     const [deleteGameOpen, setDeleteGameOpen] = useState<boolean>(false);
     const [deleteGameLoading, setDeleteGameLoading] = useState<boolean>(false);
     const [selectedGame, setSelectedGame] = useState<number>(null);
+    const [newGameTab, setNewGameTab] = useState<"single" | "multiple" | "bulk">("single");
+    const [bulkGames, setBulkGames] = useState<{
+        player1: string,
+        score1: number,
+        player2: string,
+        score2: number,
+    }[]>(null);
     const {data: games, error: gamesError}: responseInterface<GameObj[], any> = useSWR(`/api/game/list?leagueId=${league.id}&iter=${gameIteration}`, fetcher);
     const {data: playerRatings, error: playerRatingsError}: responseInterface<PlayerStandingObj[], any> = useSWR(`api/league/standings?leagueId=${league.id}&?iter=${playerIteration}`, fetcher);
 
     function onSubmitGame() {
         setNewGameLoading(true);
         setUnauth(false);
-        axios.post("/api/game/new", {
-            player1: player1,
-            score1: score1.toString(),
-            player2: player2,
-            score2: score2.toString(),
-            code: code,
-            leagueId: league.id,
-        }).then((res: AxiosResponse) => {
-            setNewGameLoading(false);
-            setGameIteration(gameIteration + 1);
-            setPlayerIteration(playerIteration + 1);
-            onCancelSubmitGame();
-        }).catch((e: AxiosError) => {
-            setNewGameLoading(false);
-            if (e.response.status === 403) {
-                setUnauth(true);
-                setUnauthMessage(e.response.data.message)
+
+        if (newGameTab === "single") {
+            axios.post("/api/game/new", {
+                player1: player1,
+                score1: score1.toString(),
+                player2: player2,
+                score2: score2.toString(),
+                code: code,
+                leagueId: league.id,
+            }).then((res: AxiosResponse) => {
+                afterSubmit();
+            }).catch((e: AxiosError) => {
+                handleSubmitError(e);
+            });
+        } else {
+            let games = [];
+            if (newGameTab === "bulk") {
+                const lines = csvImportText.split("\n");
+                lines.forEach(line => {
+                    const values = line.split(",");
+                    const game = {
+                        date: values[0],
+                        player1: values[1],
+                        player2: values[2],
+                        score1: +values[3],
+                        score2: +values[4],
+                    };
+                    games.push(game);
+                });
+            } else {
+                games = bulkGames.map(game => ({date: new Date().toISOString(), ...game}));
             }
-            console.log(e);
-        });
+
+            axios.post("/api/game/upload", {
+                gameObjArray: games,
+                leagueId: league.id
+            }).then(() => {
+                afterSubmit();
+            }).catch((e: AxiosError) => {
+                handleSubmitError(e);
+            });
+        }        
+    }
+    
+    function afterSubmit() {
+        setNewGameLoading(false);
+        setGameIteration(gameIteration + 1);
+        setPlayerIteration(playerIteration + 1);
+        onCancelSubmitGame();
+    }
+    
+    function handleSubmitError(e: AxiosError) {
+        setNewGameLoading(false);
+        if (e.response.status === 403) {
+            setUnauth(true);
+            setUnauthMessage(e.response.data.message)
+        }
+        console.log(e);
     }
 
     function onCancelSubmitGame() {
@@ -77,6 +123,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         setCode("");
         setUnauth(false);
         setUnauthMessage("");
+        setCsvImportText("");
         setNewGameOpen(false);
     }
 
@@ -88,7 +135,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             leagueId: league.id,
             name: newPlayerName,
             code: code
-        }).then(res => {
+        }).then(() => {
             // change dummy param to trigger standings re-query
             setPlayerIteration(playerIteration + 1);
             setNewPlayerLoading(false);
@@ -109,32 +156,6 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         setUnauth(false);
         setUnauthMessage("");
         setCode("");
-    }
-
-    function csvImport () {
-        let games = [];
-        const lines = csvImportText.split("\n");
-        lines.forEach(line => {
-            const values = line.split(",");
-            const game = {
-                league_id: league.id,
-                date: values[0],
-                player1: values[1],
-                player2: values[2],
-                score1: +values[3],
-                score2: +values[4],
-            }
-            games.push(game);
-        });
-
-        axios.post("/api/game/upload", {
-            gameObjArray: games,
-            leagueId: league.id
-        }).then(res => {
-
-        }).catch((e: AxiosError) => {
-
-        });
     }
 
     function onDeleteGame() {
@@ -169,10 +190,6 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
     return (
         <div className="max-w-4xl mx-auto px-4 pb-12">
             <ElNextSeo title={"League: " + league.name}/>
-
-            {/*<textarea placeholder="Enter each game on a new line, following this format: date,player1,player2,score1,score2" value={csvImportText} onChange={(e) => setCsvImportText(e.target.value)}/>*/}
-            {/*<button onClick={csvImport}> CSV IMPORT </button>*/}
-
             {isAdmin && (
                 <Link href="/dashboard">
                     <a className="flex items-center mt-8">
@@ -274,42 +291,72 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                             </ElButton>
                             <ElModal isOpen={newGameOpen} closeModal={onCancelSubmitGame}>
                                 <ElH2>Log new game</ElH2>
-                                <hr className="my-6"/>
-                                <div className="flex -mx-2">
-                                    <div className="mx-2 w-1/2">
-                                        <ElH3>Player 1</ElH3>
-                                        <Select
-                                            value={{label: player1, value: player1}}
-                                            onChange={selected => {
-                                                setPlayer1(selected.value);
-                                            }}
-                                            options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})): []}
-                                            filterOption={label => label !== player2}
-                                            className="w-full my-2"
-                                        />
-                                    </div>
-                                    <div className="mx-2 w-1/2">
-                                        <ElH3>P1 score</ElH3>
-                                        <ElInput value={score1} setValue={setScore1} type="number"/>
-                                    </div>
+                                <div className="my-6 flex">
+                                    <ElTab selected={newGameTab === "single"} onClick={() => setNewGameTab("single")}>Single</ElTab>
+                                    {/*<ElTab selected={newGameTab === "multiple"} onClick={() => setNewGameTab("multiple")}>Multiple</ElTab>*/}
+                                    <ElTab selected={newGameTab === "bulk"} onClick={() => setNewGameTab("bulk")}>Bulk</ElTab>
                                 </div>
-                                <hr className="my-6"/>
-                                <div className="flex -mx-2">
-                                    <div className="mx-2 w-1/2">
-                                        <ElH3>Player 2</ElH3>
-                                        <Select
-                                            value={{label: player2, value: player2}}
-                                            onChange={selected => setPlayer2(selected.value)}
-                                            options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})) : []}
-                                            filterOption={({label}) => label !== player1}
-                                            className="w-full my-2"
+                                {newGameTab === "single" ? (
+                                    <>
+                                        <div className="flex -mx-2">
+                                            <div className="mx-2 w-1/2">
+                                                <ElH3>Player 1</ElH3>
+                                                <Select
+                                                    value={{label: player1, value: player1}}
+                                                    onChange={selected => {
+                                                        setPlayer1(selected.value);
+                                                    }}
+                                                    options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})): []}
+                                                    filterOption={label => label !== player2}
+                                                    className="w-full my-2"
+                                                />
+                                            </div>
+                                            <div className="mx-2 w-1/2">
+                                                <ElH3>P1 score</ElH3>
+                                                <ElInput value={score1} setValue={setScore1} type="number"/>
+                                            </div>
+                                        </div>
+                                        <hr className="my-6"/>
+                                        <div className="flex -mx-2">
+                                            <div className="mx-2 w-1/2">
+                                                <ElH3>Player 2</ElH3>
+                                                <Select
+                                                    value={{label: player2, value: player2}}
+                                                    onChange={selected => setPlayer2(selected.value)}
+                                                    options={playerRatings ? playerRatings.map(player => ({label: player.name, value: player.name})) : []}
+                                                    filterOption={({label}) => label !== player1}
+                                                    className="w-full my-2"
+                                                />
+                                            </div>
+                                            <div className="mx-2 w-1/2">
+                                                <ElH3>P2 score</ElH3>
+                                                <ElInput value={score2} setValue={setScore2} type="number"/>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : newGameTab === "multiple" ? (
+                                    <>
+                                        {bulkGames.map(game => (
+                                            <div className="flex">
+
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="my-6">
+                                            Enter each game on a new line, following this format: <code>date (ISO string),player1,player2,score1,score2</code>
+                                        </p>
+                                        <textarea
+                                            className="w-full p-2 border"
+                                            style={{minWidth: 300}}
+                                            placeholder="Enter your games here"
+                                            value={csvImportText}
+                                            rows={5}
+                                            onChange={(e) => setCsvImportText(e.target.value)}
                                         />
-                                    </div>
-                                    <div className="mx-2 w-1/2">
-                                        <ElH3>P2 score</ElH3>
-                                        <ElInput value={score2} setValue={setScore2} type="number"/>
-                                    </div>
-                                </div>
+                                    </>
+                                )}
                                 <hr className="my-6"/>
                                 {!isAdmin && (
                                     <>
@@ -323,7 +370,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                                     </>
                                 )}
                                 <ElButton onClick={onSubmitGame} isLoading={newGameLoading}>
-                                    Create
+                                    Add
                                 </ElButton>
                                 <ElButton text={true} onClick={onCancelSubmitGame} disabled={newGameLoading}>
                                     Cancel
