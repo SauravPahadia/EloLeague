@@ -2,6 +2,7 @@ import {GetServerSideProps} from "next";
 import {GameObj, LeagueObj, PlayerStandingObj, SessionObj} from "../../utils/types";
 import {getSession} from "next-auth/client";
 import {createClient} from "@supabase/supabase-js";
+import {useRouter} from "next/router";
 import ElH1 from "../../components/ElH1";
 import ElButton from "../../components/ElButton";
 import React, {useState} from "react";
@@ -22,6 +23,8 @@ import ElInfoBox from "../../components/ElInfoBox";
 import ElNextSeo from "../../components/ElNextSeo";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
+    const router = useRouter();
+
     const isAdmin = session && (+league.user_id === +session.userId);
     const [newGameOpen, setNewGameOpen] = useState<boolean>(false);
     const [player1, setPlayer1] = useState<string>("");
@@ -34,6 +37,8 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
     const [newPlayerOpen, setNewPlayerOpen] = useState<boolean>(false);
     const [newPlayerLoading, setNewPlayerLoading] = useState<boolean>(false);
     const [newPlayerName, setNewPlayerName] = useState<string>("");
+    const [deleteLeagueOpen, setDeleteLeagueOpen] = useState<boolean>(false);
+    const [deleteLeagueLoading, setDeleteLeagueLoading] = useState<boolean>(false);
     const [gameIteration, setGameIteration] = useState<number>(0);
     const [playerIteration, setPlayerIteration] = useState<number>(0);
     const [unauth, setUnauth] = useState<boolean>(false);
@@ -163,6 +168,26 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         setSelectedGame(null);
     }
 
+    function onCancelDeleteLeague() {
+        setDeleteLeagueOpen(false);
+    }
+
+    function onDeleteLeague() {
+        setDeleteLeagueLoading(true);
+        axios.delete("/api/league/delete", {
+            data: {
+                leagueId: league.id,
+            }
+        }).then(() => {
+            setDeleteLeagueLoading(false);
+            onCancelDeleteLeague();
+            router.push("/dashboard");
+        }).catch(e => {
+            console.log(e);
+            setDeleteLeagueLoading(false);
+        });
+    }
+
     const thClass = "font-normal pb-2";
     const tdClass = "py-4 border-b";
 
@@ -181,8 +206,31 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                     </a>
                 </Link>
             )}
-            <ElH1>League: {league.name}</ElH1>
-            <p className="text-lg">{league.description || ""}</p>
+            
+            <div className="flex items-baseline">
+                <div>
+                    <ElH1>League: {league.name}</ElH1>
+                    <p className="text-lg">{league.description || ""}</p>
+                </div>
+                {
+                    isAdmin && <div className="ml-auto mb-6">
+                        <ElButton onClick={() => setDeleteLeagueOpen(true)}>
+                            Delete League
+                        </ElButton>
+                        <ElModal isOpen={deleteLeagueOpen} closeModal={onCancelDeleteLeague}>
+                            <ElH2>Delete League {league.name}</ElH2>
+                            <p className="mt-8 mb-8">Are you sure you want to delete league {league.name}? This action cannot be undone.</p>
+                            <ElButton onClick={onDeleteLeague} isLoading={deleteLeagueLoading}>
+                                Delete
+                            </ElButton>
+                            <ElButton text={true} onClick={onCancelDeleteLeague} disabled={deleteLeagueLoading}>
+                                Cancel
+                            </ElButton>
+                        </ElModal>
+                    </div>
+                }
+            </div>
+            
             {isAdmin ? (
                 <ElInfoBox className="my-4">
                     <div className="flex items-center">
