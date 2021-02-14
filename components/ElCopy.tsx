@@ -1,9 +1,9 @@
 import Link from "next/link";
 import {ReactNode} from "react";
 import { AiOutlineCopy } from "react-icons/ai";
-import { useToasts } from 'react-toast-notifications';
+import { ToastProvider, useToasts } from 'react-toast-notifications';
 
-export default function ElCopy({text, className, size, success, error}: {
+function ElCopyBase({text, className, size, success, error}: {
     text: string,
     className?: string,
     size?: number,
@@ -36,8 +36,24 @@ export default function ElCopy({text, className, size, success, error}: {
     }
     
     return (
-        <button onClick={copy} className={className + " focus:outline-none"}>
-            <AiOutlineCopy  size={size || 25}/>
-        </button>
+        <ToastProvider>
+            <button onClick={copy} className={className + " focus:outline-none"}>
+                <AiOutlineCopy  size={size || 25}/>
+            </button>
+        </ToastProvider>
     )
 }
+
+ export default function ElCopy({text, className, size, success, error}: {
+    text: string,
+    className?: string,
+    size?: number,
+    success?: string, 
+    error?: string
+}) {
+    return (
+        <ToastProvider>
+            <ElCopyBase text={text} className={className} size={size} success={success} error={error}/>
+        </ToastProvider>
+    );
+};

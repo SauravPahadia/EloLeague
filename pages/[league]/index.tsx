@@ -238,9 +238,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                 <div>
                     <div className="flex items-baseline">
                         <ElH1>{league.name}</ElH1>
-                        <ToastProvider>
                             <ElCopy text={`eloleague.com/${league.url_name}`} className="ml-5"/>
-                        </ToastProvider>
                     </div>
                     <p className="text-lg">{league.description || ""}</p>
                     <p className="text-lg">Games Played: {games && games.length}</p>
@@ -269,7 +267,8 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                     <div className="flex items-center">
                         <BiInfoCircle className="flex-shrink-0"/>
                         <p className="text-lg ml-4">
-                            You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
+                            You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span> <ElCopy text={league.code} className="m-1" size={20}/>)
+                            with players for them to log games.
                         </p>
                     </div>
                 </ElInfoBox>
