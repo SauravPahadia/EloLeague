@@ -22,6 +22,8 @@ import ElFooterCTA from "../../components/ElFooterCTA";
 import ElInfoBox from "../../components/ElInfoBox";
 import ElNextSeo from "../../components/ElNextSeo";
 import ElTab from "../../components/ElTab";
+import ElCopy from "../../components/ElCopy";
+import { ToastProvider } from "react-toast-notifications";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const router = useRouter();
@@ -216,6 +218,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         });
     }
 
+
     const thClass = "font-normal pb-2";
     const tdClass = "py-4 border-b";
 
@@ -233,7 +236,12 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             
             <div className="flex items-baseline">
                 <div>
-                    <ElH1>League: {league.name}</ElH1>
+                    <div className="flex items-baseline">
+                        <ElH1>{league.name}</ElH1>
+                        <ToastProvider>
+                            <ElCopy text={`eloleague.com/${league.url_name}`} className="ml-5"/>
+                        </ToastProvider>
+                    </div>
                     <p className="text-lg">{league.description || ""}</p>
                     <p className="text-lg">Games Played: {games && games.length}</p>
                 </div>
