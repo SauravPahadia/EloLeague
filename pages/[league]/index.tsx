@@ -22,6 +22,8 @@ import ElFooterCTA from "../../components/ElFooterCTA";
 import ElInfoBox from "../../components/ElInfoBox";
 import ElNextSeo from "../../components/ElNextSeo";
 import ElTab from "../../components/ElTab";
+import ElCopy from "../../components/ElCopy";
+import { ToastProvider } from "react-toast-notifications";
 
 export default function LeagueIndex({league, session}: {league: LeagueObj, session: SessionObj}) {
     const router = useRouter();
@@ -148,7 +150,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         }).catch((e: AxiosError) => {
             setNewPlayerLoading(false);
             if (e.response.status === 403) {
-                setUnauthMessage(e.response.data.message)
+                setUnauthMessage(e.response.data.message);
                 setUnauth(true);
             }
             console.log(e);
@@ -179,6 +181,10 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             setPlayerIteration(playerIteration + 1);
         }).catch(e => {
             console.log(e);
+            if (e.response.status === 403) {
+                setUnauthMessage(e.response.data.message);
+                setUnauth(true);
+            }
             setDeleteGameLoading(false);
         });
     }
@@ -187,6 +193,8 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         setDeleteGameOpen(false);
         setCode("");
         setSelectedGame(null);
+        setUnauth(false);
+        setUnauthMessage("");
     }
 
     function onCancelDeleteLeague() {
@@ -198,6 +206,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
         axios.delete("/api/league/delete", {
             data: {
                 leagueId: league.id,
+                accessCode: code || "",
             }
         }).then(() => {
             setDeleteLeagueLoading(false);
@@ -208,6 +217,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             setDeleteLeagueLoading(false);
         });
     }
+
 
     const thClass = "font-normal pb-2";
     const tdClass = "py-4 border-b";
@@ -226,8 +236,12 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
             
             <div className="flex items-baseline">
                 <div>
-                    <ElH1>League: {league.name}</ElH1>
+                    <div className="flex items-baseline">
+                        <ElH1>{league.name}</ElH1>
+                            <ElCopy text={`eloleague.com/${league.url_name}`} className="ml-5"/>
+                    </div>
                     <p className="text-lg">{league.description || ""}</p>
+                    <p className="text-lg">Games Played: {games && games.length}</p>
                 </div>
                 {
                     isAdmin && <div className="ml-auto mb-6">
@@ -253,7 +267,8 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                     <div className="flex items-center">
                         <BiInfoCircle className="flex-shrink-0"/>
                         <p className="text-lg ml-4">
-                            You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span>) with players for them to log games.
+                            You are an admin of this league. Share the current url ({`eloleague.com/${league.url_name}`}) and access code (<span className="el-font-display">{league.code}</span> <ElCopy text={league.code} className="m-1" size={20}/>)
+                            with players for them to log games.
                         </p>
                     </div>
                 </ElInfoBox>
@@ -480,6 +495,18 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                 <ElModal isOpen={deleteGameOpen} closeModal={onDeleteCancel}>
                     <ElH2>Delete game</ElH2>
                     <p className="my-6">Are you sure you want to delete this game?</p>
+                    <hr className="my-6"/>
+                    {!isAdmin && (
+                        <>
+                            <ElH3>Access code</ElH3>
+                            <p>Ask your league admin for the access code.</p>
+                            <ElInput value={code} setValue={setCode}/>
+                            {unauth && (
+                                <p className="my-2 text-red-500">{unauthMessage}</p>
+                            )}
+                            <hr className="my-6"/>
+                        </>
+                    )}
                     <ElButton onClick={onDeleteGame} isLoading={deleteGameLoading}>
                         Delete
                     </ElButton>
