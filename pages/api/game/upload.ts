@@ -43,6 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .update({ players: players })
         .eq("id", req.body.leagueId);
   
+    // earliest games come first
+    // if a is less (earlier) than b, a should come first
+    req.body.gameObjArray.sort(function(a,b){
+        // Turn your strings into dates, and then subtract them
+        // to get a value that is either negative, positive, or zero.
+        return +(new Date(a.date)) - +(new Date(b.date));
+    });
+          
     let uploadedGames = []
     // update games
     req.body.gameObjArray.forEach(game => {
