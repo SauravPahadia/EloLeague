@@ -10,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // check for missing fields
     if (!req.body.leagueId) return res.status(406).json({message: "Missing leagueId field"});
     if (!req.body.gameObjArray) return res.status(406).json({message: "Missing game object array"});
-    console.log(req.body.gameObjArray)
     // check auth
     const session = await getSession({req});
      if (!session && !req.body.code) return res.status(403).json({message: "You must have an access code or be logged in to upload games data."});
@@ -44,14 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .update({ players: players })
         .eq("id", req.body.leagueId);
   
-    // earliest games come first
-    // if a is less (earlier) than b, a should come first
-    req.body.gameObjArray.sort(function(a,b){
-        // Turn your strings into dates, and then subtract them
-        // to get a value that is either negative, positive, or zero.
-        return +(new Date(a.date)) - +(new Date(b.date));
-    });
-          
     let uploadedGames = []
     // update games
     req.body.gameObjArray.forEach(game => {
