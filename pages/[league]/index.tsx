@@ -235,6 +235,7 @@ export default function LeagueIndex({league, session}: {league: LeagueObj, sessi
                 <div>
                     <ElH1>League: {league.name}</ElH1>
                     <p className="text-lg">{league.description || ""}</p>
+                    <p className="text-lg">Games Played: {games && games.length}</p>
                 </div>
                 {
                     isAdmin && <div className="ml-auto mb-6">
